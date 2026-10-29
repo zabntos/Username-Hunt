@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07030f">
+<title>Username Hunter</title>
+<style>
+:root{--bg:#07030f;--p:#a855f7;--b:#60a5fa;--pk:#ec4899;--gold:#fbbf24;--tx:#f1e9ff;--mut:#9b8fb8;--panel:rgba(255,255,255,.055);--line:rgba(255,255,255,.1)}
+*{box-sizing:border-box}
+html,body{margin:0;color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{min-height:100vh;overflow-x:hidden;background:radial-gradient(ellipse at 15% 0,#2a0a52 0,transparent 55%),radial-gradient(ellipse at 95% 100%,#3a0a45 0,transparent 55%),var(--bg);background-attachment:fixed}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button:disabled{cursor:default}
+[hidden]{display:none!important}
+#bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#bg i{position:absolute;bottom:-14px;border-radius:50%;background:var(--p);box-shadow:0 0 10px var(--p);opacity:0;animation:rise var(--t) linear infinite;animation-delay:var(--d)}
+@keyframes rise{0%{transform:translate3d(0,0,0);opacity:0}10%{opacity:.7}100%{transform:translate3d(var(--x),-110vh,0);opacity:0}}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:rgba(7,3,15,.82);border-bottom:1px solid var(--line)}
+.brand{background:none;border:0;padding:0;font-weight:900;letter-spacing:.14em;font-size:14px;background:linear-gradient(90deg,var(--b),var(--p),var(--pk));-webkit-background-clip:text;background-clip:text;color:transparent}
+.chip-top{font-size:13px;font-weight:700;padding:5px 12px;border-radius:999px;border:1px solid var(--gold);color:var(--gold);background:rgba(251,191,36,.08)}
+main{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:16px 16px calc(96px + env(safe-area-inset-bottom))}
+.screen{display:none}
+.screen.active{display:block;animation:fadein .35s ease both}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h1,h2,h3{margin:0}
+.title{text-align:center;font-size:clamp(34px,11vw,60px);font-weight:900;line-height:1;letter-spacing:.04em;background:linear-gradient(90deg,#8ab4ff,#c084fc,#f472b6,#fbbf24);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite}
+@keyframes shine{to{background-position:200% 0}}
+.sub{text-align:center;color:var(--mut);margin:10px auto 0;max-width:420px;font-size:15px;line-height:1.45}
+h2.h{font-size:24px;margin-bottom:4px}
+.lead{color:var(--mut);font-size:14px;margin:0 0 14px;line-height:1.45}
+.sphere-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;margin:22px 0 8px}
+.sphere{--s:min(70vw,300px);position:relative;width:var(--s);height:var(--s);border:0;background:none;padding:0;border-radius:50%}
+.sphere.small{--s:min(52vw,220px)}
+.orb{position:absolute;inset:9%;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 32% 28%,#fff 0,#f3c4ff 7%,#a855f7 28%,#5b21b6 58%,#1a0838 100%);box-shadow:0 0 36px 6px rgba(168,85,247,.65),0 0 100px 26px rgba(236,72,153,.28),inset 0 0 40px rgba(255,255,255,.2);animation:pulse 3.2s ease-in-out infinite}
+.orb::after{content:"";position:absolute;inset:-20%;border-radius:50%;background:conic-gradient(from 0deg,transparent,rgba(96,165,250,.55),transparent 38%,rgba(236,72,153,.5),transparent 78%);mix-blend-mode:screen;animation:spin 6s linear infinite}
+.orb-label{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;font-weight:900;letter-spacing:.3em;font-size:15px;color:#fff;text-shadow:0 0 12px #000}
+.ring{position:absolute;inset:3%;border-radius:50%;border:2px solid rgba(192,132,252,.55);animation:ringout 3.2s ease-out infinite;pointer-events:none}
+.ring.r2{animation-delay:1.6s}
+@keyframes ringout{0%{transform:scale(.8);opacity:.8}100%{transform:scale(1.25);opacity:0}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sphere:active .orb{transform:scale(.96)}
+.sphere.charging .orb{animation:charge .9s ease-in forwards}
+.sphere.charging .ring{animation-duration:.6s}
+@keyframes charge{0%{transform:scale(1);filter:brightness(1)}25%{transform:scale(.88) rotate(-2deg);filter:brightness(1.2)}60%{transform:scale(1.02) rotate(2deg);filter:brightness(1.6)}100%{transform:scale(1.22);filter:brightness(2.4)}}
+.btn{border:1px solid var(--line);background:var(--panel);padding:12px 22px;border-radius:14px;font-weight:700;font-size:15px}
+.btn.primary{border:0;color:#fff;background:linear-gradient(135deg,#7c3aed,#db2777);box-shadow:0 6px 24px rgba(168,85,247,.45);font-size:18px;letter-spacing:.2em;padding:14px 46px}
+.btn.primary:disabled{opacity:.6}
+.btn.danger{border-color:#ef4444;color:#fecaca;background:rgba(239,68,68,.12)}
+.btn:active{transform:scale(.97)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:14px}
+.panel h3{font-size:16px;margin-bottom:8px}
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat b{display:block;font-size:22px}
+.stat span{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bar{height:8px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--b),var(--p),var(--pk));transition:width .5s}
+.note{font-size:12px;color:var(--mut);text-align:center;margin:18px 0 0;line-height:1.5}
+.search{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.35);color:var(--tx);font-size:16px;margin-bottom:10px}
+.search:focus,textarea:focus{outline:2px solid var(--p)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px;-webkit-overflow-scrolling:touch}
+.chip{--c:#9b8fb8;flex:0 0 auto;border:1px solid var(--line);background:var(--panel);padding:7px 13px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap}
+.chip.on{border-color:var(--c);color:var(--c);background:rgba(255,255,255,.1);box-shadow:0 0 10px -2px var(--c)}
+.list{display:grid;gap:10px;margin-top:8px}
+.card{--c:#9b8fb8;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c)}
+.card .ic{font-size:24px;color:var(--c);text-shadow:0 0 10px var(--c);width:30px;text-align:center;flex:0 0 30px}
+.card .nm{flex:1;min-width:0;font-weight:800;font-size:17px;word-break:break-word}
+.card .sm{font-size:12px;color:var(--mut);font-weight:500;display:block;margin-top:2px}
+.pill{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--c);border:1px solid var(--c);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.card.locked{opacity:.65;border-left-color:#444}
+.card.locked .nm{color:var(--mut);letter-spacing:.25em}
+.card.locked .ic{color:#666;text-shadow:none}
+.tag{font-size:11px;font-weight:800;border-radius:6px;padding:2px 7px;white-space:nowrap}
+.tag.new{background:rgba(52,211,153,.18);color:#6ee7b7}
+.tag.dup{background:rgba(251,191,36,.18);color:var(--gold)}
+.empty{text-align:center;padding:36px 16px;color:var(--mut);border:1px dashed var(--line);border-radius:16px;margin-top:10px}
+.empty b{display:block;font-size:34px;color:var(--p);margin-bottom:6px}
+.odds{width:100%;border-collapse:collapse;font-size:14px}
+.odds td,.odds th{padding:7px 4px;text-align:left;border-bottom:1px solid var(--line)}
+.odds th{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+.odds td:last-child,.odds th:last-child{text-align:right}
+textarea{width:100%;min-height:90px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.4);color:var(--tx);padding:10px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;resize:vertical;margin:8px 0}
+.msg{font-size:13px;min-height:18px;margin:4px 0 0}
+.msg.ok{color:#6ee7b7}.msg.bad{color:#fca5a5}
+.badge-on{display:inline-block;font-weight:900;font-size:12px;letter-spacing:.1em;color:#6ee7b7;border:1px solid #34d399;border-radius:999px;padding:4px 12px;background:rgba(52,211,153,.1)}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom));background:rgba(10,4,20,.94);border-top:1px solid var(--line)}
+.nav button{flex:1;min-width:0;max-width:120px;background:none;border:0;padding:6px 1px;color:var(--mut);font-size:9.5px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:12px}
+.nav button span{font-size:18px;line-height:1}
+.nav button.on{color:#fff;background:rgba(168,85,247,.22)}
+#toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:90;background:#241046;border:1px solid var(--p);padding:10px 16px;border-radius:12px;font-size:14px;max-width:88vw;text-align:center}
+.modal{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.75)}
+.modal .box{background:#160a2b;border:1px solid var(--p);border-radius:18px;padding:20px;max-width:360px;width:100%}
+.modal h3{margin-bottom:8px}
+.modal p{color:var(--mut);font-size:14px;line-height:1.5;margin:0 0 16px}
+/* reveal */
+.reveal{--c:#9b8fb8;--cd:0s;--bgo:.2;position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,2,12,.94);overflow:hidden}
+.rv-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 48%,var(--c) 0,transparent 62%);opacity:0;animation:bgin 1s ease forwards}
+@keyframes bgin{to{opacity:var(--bgo)}}
+.rv-rays{position:absolute;inset:-60%;background:repeating-conic-gradient(var(--c) 0 6deg,transparent 6deg 18deg);opacity:.16;-webkit-mask-image:radial-gradient(circle,#000 0,transparent 62%);mask-image:radial-gradient(circle,#000 0,transparent 62%);animation:spin 14s linear infinite}
+.rv-fx{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none}
+.rv-flash{position:fixed;inset:0;background:var(--c);opacity:0;animation:flash .8s ease-out forwards}
+@keyframes flash{0%{opacity:var(--fo)}100%{opacity:0}}
+.rv-ring{position:absolute;left:-30px;top:-30px;width:60px;height:60px;border:3px solid var(--c);border-radius:50%;box-shadow:0 0 18px var(--c);opacity:0;animation:rvring 1.7s ease-out forwards;animation-delay:calc(var(--i) * .22s)}
+@keyframes rvring{0%{transform:scale(.2);opacity:.95}100%{transform:scale(15);opacity:0}}
+.rv-p{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);opacity:0;animation:burst 1.5s ease-out forwards;animation-delay:var(--d)}
+@keyframes burst{0%{transform:translate(0,0) scale(1.2);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+.reveal.shake{animation:shake .5s linear}
+@keyframes shake{0%,100%{transform:none}20%{transform:translate(-6px,3px)}40%{transform:translate(6px,-4px)}60%{transform:translate(-4px,-3px)}80%{transform:translate(4px,4px)}}
+.rv-card{position:relative;width:100%;max-width:420px;text-align:center;padding:26px 18px 22px;border-radius:22px;background:rgba(14,6,28,.78);border:2px solid var(--c);box-shadow:0 0 40px -4px var(--c),inset 0 0 30px -12px var(--c);opacity:0;animation:cardin .65s cubic-bezier(.2,1.3,.4,1) forwards;animation-delay:var(--cd)}
+@keyframes cardin{0%{opacity:0;transform:scale(.4) translateY(30px)}100%{opacity:1;transform:none}}
+.rv-icon{font-size:64px;line-height:1;color:var(--c);text-shadow:0 0 24px var(--c),0 0 60px var(--c);animation:pulse 1.8s ease-in-out infinite}
+.rv-rarity{margin-top:10px;font-weight:900;letter-spacing:.28em;font-size:15px;color:var(--c);text-shadow:0 0 12px var(--c)}
+.rv-badge{display:inline-block;margin-top:12px;padding:5px 16px;border-radius:999px;font-weight:900;letter-spacing:.14em;font-size:13px}
+.rv-badge.new{background:rgba(52,211,153,.2);color:#6ee7b7;border:1px solid #34d399}
+.rv-badge.dup{background:rgba(251,191,36,.2);color:var(--gold);border:1px solid var(--gold)}
+.rv-name{margin:14px 0 6px;font-size:clamp(30px,10vw,54px);font-weight:900;word-break:break-word;color:#fff;text-shadow:0 0 22px var(--c),0 0 4px var(--c)}
+.rv-count{color:var(--mut);font-size:14px;margin:0}
+.rv-card .btn{margin-top:20px;min-width:180px}
+.tier-7 .rv-name{background:linear-gradient(90deg,#fff,#ffd84a,#ff7ad9,#7ad7ff,#fff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 0 14px var(--c));animation:shine 3s linear infinite}
+.tier-6 .rv-name{filter:drop-shadow(0 0 10px var(--c))}
+.mini{grid-template-columns:repeat(3,1fr)}
+.mini .stat b{font-size:19px}
+.tops{display:flex;gap:6px}
+.chip-top.coin{border-color:#60a5fa;color:#9cc7ff;background:rgba(96,165,250,.1)}
+.playing{text-align:center;margin:12px 0 0;font-size:14px;color:var(--mut)}
+.playing b{font-size:16px}
+.btn.sm{padding:6px 12px;font-size:12px;border-radius:10px;margin-top:6px}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:22px;letter-spacing:.14em;color:var(--gold)}
+.rank{width:30px;flex:0 0 30px;text-align:center;font-weight:900;font-size:18px;color:var(--mut)}
+.rank.r1{color:#ffd84a}.rank.r2{color:#d0d8e6}.rank.r3{color:#e09a5b}
+.card.me{box-shadow:inset 0 0 0 1px var(--p)}
+.rv-coins{margin:10px 0 0;font-weight:800;color:var(--gold);font-size:15px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+</head>
+<body>
+<div id="bg" aria-hidden="true"></div>
+
+<header class="topbar">
+  <button type="button" class="brand" data-nav="home">USERNAME HUNTER</button>
+  <div class="tops"><div class="chip-top coin" id="top-coins">&#9678; 0</div><div class="chip-top" id="top-progress">0 / 46</div></div>
+</header>
+
+<main>
+  <section id="screen-home" class="screen active" aria-label="Home">
+    <h1 class="title">USERNAME<br>HUNTER</h1>
+    <p class="sub">Tap the glowing sphere to hunt a username. Duplicates are part of the game.</p>
+    <p class="playing">Player: <b id="hm-pname"></b> &middot; Equipped: <b id="hm-equipped"></b></p>
+    <div class="sphere-wrap">
+      <button type="button" class="sphere" data-hunt aria-label="Hunt a username">
+        <span class="ring"></span><span class="ring r2"></span>
+        <span class="orb"></span><span class="orb-label">TAP</span>
+      </button>
+      <button type="button" class="btn primary" data-hunt data-label="HUNT">HUNT</button>
+    </div>
+    <div class="mini">
+      <div class="stat"><span>Collected</span><b id="hm-unique">0 / 46</b></div>
+      <div class="stat"><span>Total hunts</span><b id="hm-hunts">0</b></div>
+      <div class="stat"><span>Coins</span><b id="hm-coins">0</b></div>
+    </div>
+    <div class="bar" aria-hidden="true"><i id="hm-bar"></i></div>
+    <div class="panel">
+      <h3>Player name</h3>
+      <div id="pname-set" hidden>
+        <p class="lead" style="margin:0">Your permanent player name: <b id="pname-show" style="color:var(--gold)"></b></p>
+      </div>
+      <div id="pname-form">
+        <p class="lead">Choose your player name. It shows on the leaderboard and in lobbies, and it can never be changed or rerolled.</p>
+        <div class="row" style="flex-wrap:nowrap">
+          <input type="text" id="pname-input" class="search" style="margin:0" placeholder="3-16 letters, numbers, _" maxlength="16" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <button type="button" class="btn" id="pname-btn">Lock In</button>
+        </div>
+        <p class="msg" id="pname-msg" role="status"></p>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Redeem a code</h3>
+      <div class="row" style="flex-wrap:nowrap">
+        <input type="text" id="code-input" class="search" style="margin:0" placeholder="Enter code" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <button type="button" class="btn" id="code-btn">Redeem</button>
+      </div>
+      <p class="msg" id="code-msg" role="status"></p>
+    </div>
+    <p class="note">Offline collection game. The usernames are not claimed or reserved on any real platform.</p>
+  </section>
+
+  <section id="screen-hunt" class="screen" aria-label="Hunt">
+    <h2 class="h">Hunt</h2>
+    <p class="lead">Tap the sphere or press Hunt. Every hunt gives exactly one username.</p>
+    <div class="sphere-wrap" style="margin-top:6px">
+      <button type="button" class="sphere small" data-hunt aria-label="Hunt a username">
+        <span class="ring"></span><span class="ring r2"></span>
+        <span class="orb"></span><span class="orb-label">TAP</span>
+      </button>
+      <button type="button" class="btn primary" data-hunt data-label="HUNT">HUNT</button>
+    </div>
+    <div class="grid2" style="margin-top:18px">
+      <div class="stat"><span>Unique found</span><b id="st-unique">0 / 46</b></div>
+      <div class="stat"><span>Total hunts</span><b id="st-hunts">0</b></div>
+      <div class="stat"><span>Duplicates</span><b id="st-dupes">0</b></div>
+      <div class="stat"><span>Progress</span><b id="st-percent">0%</b></div>
+      <div class="stat"><span>Coins</span><b id="st-coins">0</b></div>
+      <div class="stat"><span>Rarest roll</span><b id="st-best">&mdash;</b></div>
+    </div>
+    <div class="bar" aria-hidden="true"><i id="st-bar"></i></div>
+    <div class="panel"><h3>Last username found</h3><div id="st-last"></div></div>
+    <div class="panel"><h3>Recent hunts</h3><div class="list" id="history-list"></div></div>
+  </section>
+
+  <section id="screen-collection" class="screen" aria-label="Collection">
+    <h2 class="h">Collection</h2>
+    <p class="lead" id="collection-count"></p>
+    <input type="search" id="collection-search" class="search" placeholder="Search your usernames…" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="chips" id="collection-chips"></div>
+    <div class="list" id="collection-list"></div>
+  </section>
+
+  <section id="screen-index" class="screen" aria-label="Index">
+    <h2 class="h">Index</h2>
+    <p class="lead" id="index-lead">Undiscovered usernames stay locked until you hunt them.</p>
+    <div class="stat"><span>Unique progress</span><b id="index-progress">0 / 46</b><div class="bar"><i id="index-bar"></i></div></div>
+    <div style="height:12px"></div>
+    <input type="search" id="index-search" class="search" placeholder="Search discovered usernames…" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="chips" id="index-chips"></div>
+    <div class="list" id="index-list"></div>
+  </section>
+
+  <section id="screen-settings" class="screen" aria-label="Settings">
+    <h2 class="h">Settings</h2>
+    <div class="panel">
+      <h3>Duplicate system</h3>
+      <span class="badge-on" id="dup-status">PERMANENTLY ENABLED</span>
+      <p class="lead" style="margin:10px 0 0">Every hunt can return any username, including ones you already own. Duplicates cannot be turned off.</p>
+    </div>
+    <div class="panel">
+      <h3>Drop rates</h3>
+      <table class="odds"><thead><tr><th>Rarity</th><th>Usernames</th><th>Chance</th></tr></thead><tbody id="odds-list"></tbody></table>
+      <p class="lead" style="margin:10px 0 0">A rarity is rolled first using these chances, then one username of that rarity is chosen evenly.</p>
+    </div>
+    <div class="panel">
+      <h3>Export save</h3>
+      <div class="row">
+        <button type="button" class="btn" id="export-btn">Export Save</button>
+        <button type="button" class="btn" id="copy-btn">Copy</button>
+      </div>
+      <textarea id="export-box" readonly placeholder="Press Export Save to show your save code here."></textarea>
+    </div>
+    <div class="panel">
+      <h3>Import save</h3>
+      <textarea id="import-box" placeholder="Paste a save code here, then press Import Save."></textarea>
+      <button type="button" class="btn" id="import-btn">Import Save</button>
+      <p class="msg" id="import-msg" role="status"></p>
+    </div>
+    <div class="panel">
+      <h3>How progress is stored</h3>
+      <p class="lead" style="margin:0">Progress is saved automatically in your browser's localStorage after every hunt. Different browsers, and sometimes different preview modes (for example an editor's preview versus Chrome), keep separate storage, so use Export and Import to move a save between them.</p>
+      <p class="msg" id="storage-status"></p>
+    </div>
+    <div class="panel">
+      <h3>Reset progress</h3>
+      <p class="lead">Deletes your collection, coins, stats, history, redeemed codes and lobby. You keep the starter username.</p>
+      <button type="button" class="btn danger" id="reset-btn">Reset Progress</button>
+    </div>
+  </section>
+
+  <section id="screen-ranks" class="screen" aria-label="Leaderboard">
+    <h2 class="h">Leaderboard</h2>
+    <p class="lead" id="ranks-note"></p>
+    <div class="chips" id="ranks-chips"></div>
+    <div class="list" id="ranks-list"></div>
+  </section>
+
+  <section id="screen-lobby" class="screen" aria-label="Lobby">
+    <h2 class="h">Lobby</h2>
+    <p class="lead">This game runs fully offline, so there is no online server and no worldwide lobby. Lobbies here work through a shared lobby code and score cards that you and your friends send each other (for example in a chat).</p>
+    <div id="lobby-none">
+      <div class="panel">
+        <h3>Create a lobby</h3>
+        <input type="text" id="lobby-name" class="search" placeholder="Lobby name (optional)" maxlength="24" autocomplete="off">
+        <button type="button" class="btn primary" id="lobby-create" style="font-size:15px;padding:12px 28px;letter-spacing:.08em">Create Lobby</button>
+      </div>
+      <div class="panel">
+        <h3>Join a lobby</h3>
+        <input type="text" id="lobby-code" class="search" placeholder="LB-ABC123" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <button type="button" class="btn" id="lobby-join">Join Lobby</button>
+      </div>
+      <p class="msg" id="lobby-msg" role="status"></p>
+    </div>
+    <div id="lobby-current" hidden>
+      <div class="panel">
+        <h3 id="lobby-title"></h3>
+        <div class="row" style="align-items:center;margin-top:6px">
+          <b class="code" id="lobby-code-show"></b>
+          <button type="button" class="btn sm" id="lobby-copy-code">Copy code</button>
+        </div>
+        <p class="lead" style="margin:10px 0">Give this code to friends so they can join the same lobby.</p>
+        <button type="button" class="btn danger sm" id="lobby-leave">Leave Lobby</button>
+      </div>
+      <div class="panel">
+        <h3>Your score card</h3>
+        <p class="lead">Create your card and send it to the others in your lobby. Make a fresh one whenever your stats change.</p>
+        <div class="row">
+          <button type="button" class="btn" id="card-export">Create My Card</button>
+          <button type="button" class="btn" id="card-copy">Copy</button>
+        </div>
+        <textarea id="card-box" readonly placeholder="Your score card will appear here."></textarea>
+      </div>
+      <div class="panel">
+        <h3>Add a friend's card</h3>
+        <textarea id="card-import" placeholder="Paste a friend's score card here."></textarea>
+        <button type="button" class="btn" id="card-add">Add to Lobby</button>
+        <p class="msg" id="card-msg" role="status"></p>
+      </div>
+      <div class="panel">
+        <h3>Members</h3>
+        <div class="list" id="lobby-members"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav class="nav" aria-label="Main navigation">
+  <button type="button" data-nav="home" class="on"><span>&#8962;</span>Home</button>
+  <button type="button" data-nav="hunt"><span>&#9673;</span>Hunt</button>
+  <button type="button" data-nav="collection"><span>&#9638;</span>Collect</button>
+  <button type="button" data-nav="index"><span>&#9776;</span>Index</button>
+  <button type="button" data-nav="ranks"><span>&#9819;</span>Ranks</button>
+  <button type="button" data-nav="lobby"><span>&#9823;</span>Lobby</button>
+  <button type="button" data-nav="settings"><span>&#9881;&#xFE0E;</span>Settings</button>
+</nav>
+
+<div id="reveal" class="reveal" hidden role="dialog" aria-modal="true" aria-label="Hunt result">
+  <div class="rv-bg"></div>
+  <div class="rv-rays" id="rv-rays" hidden></div>
+  <div class="rv-fx" id="rv-fx"></div>
+  <div class="rv-card" id="rv-card">
+    <div class="rv-icon" id="rv-icon"></div>
+    <div class="rv-rarity" id="rv-rarity"></div>
+    <div class="rv-badge" id="rv-badge"></div>
+    <div class="rv-name" id="rv-name"></div>
+    <p class="rv-count" id="rv-count"></p>
+    <p class="rv-count" id="rv-progress"></p>
+    <p class="rv-coins" id="rv-coins"></p>
+    <button type="button" class="btn primary" id="rv-continue" style="font-size:16px;padding:12px 30px;letter-spacing:.12em">CONTINUE</button>
+  </div>
+</div>
+
+<div id="confirm" class="modal" hidden role="dialog" aria-modal="true" aria-label="Confirm reset">
+  <div class="box">
+    <h3 id="confirm-title">Reset all progress?</h3>
+    <p id="confirm-text">This cannot be undone.</p>
+    <div class="row">
+      <button type="button" class="btn" id="confirm-cancel">Cancel</button>
+      <button type="button" class="btn danger" id="confirm-ok">Yes, reset</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" hidden role="status"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var KEY = 'usernameHunter.save.v1';
+  var STARTER = 'Youre_Username';
+  var COINS = [5, 15, 40, 100, 300, 800, 2000, 10000]; // coins per find by rarity (duplicates give half)
+  var CODES = { WELCOME: 500, HUNTER: 1000, GOLDRUSH: 2500, USERNAMEHUNTER: 10000 };
+  var ID_RE = /^[A-Za-z0-9]{6,12}$/;
+  var NAME_RE = /^[A-Za-z0-9_]{3,16}$/;
+  var LOBBY_RE = /^LB-[A-Z0-9]{6}$/;
+  var MAX_MEMBERS = 20;
+
+  // w = chance in tenths of a percent; all eight add up to exactly 1000 (100.0%)
+  var RARITIES = [
+    { name: 'Common',       icon: '\u25CF', color: '#a8b3c7', w: 500 },
+    { name: 'Rare',         icon: '\u25C6', color: '#4aa3ff', w: 250 },
+    { name: 'Very Rare',    icon: '\u2726', color: '#2ee6c8', w: 120 },
+    { name: 'Epic',         icon: '\u2756', color: '#b45cff', w: 70 },
+    { name: 'Legendary',    icon: '\u2605', color: '#ffb92e', w: 35 },
+    { name: 'Mythic',       icon: '\u2739', color: '#ff4d6d', w: 15 },
+    { name: 'Ultra Mythic', icon: '\u273A', color: '#ff3df2', w: 8 },
+    { name: 'God',          icon: '\u265B', color: '#ffe066', w: 2 }
+  ];
+  var NAMES = [
+  [
+    STARTER, 'CloudRunner', 'PixelKnight', 'StarVoyager', 'ShadowFox', 'GoldenRiver', 'SilentComet', 'NovaPlayer',
+    'FrostWalker', 'MoonHunter', 'BrightFalcon', 'SilverQuest', 'CrimsonLeaf', 'DreamChaser', 'StormPilot',
+    'EchoLegend', 'SwiftOtter', 'AmberOtter', 'CalmOtter', 'WittyOtter', 'MistyPebble', 'BravePebble', 'WildPebble',
+    'LuckyBreeze', 'TinyBreeze', 'SunnyBreeze', 'RustyLantern', 'DustyLantern', 'MellowLantern', 'QuietMeadow',
+    'CozyMeadow', 'JollyMeadow', 'SwiftBadger', 'AmberBadger', 'CalmBadger', 'WittyBadger', 'MistyCricket',
+    'BraveCricket', 'WildCricket', 'LuckyHarbor', 'TinyHarbor', 'SunnyHarbor', 'RustyMaple', 'DustyMaple',
+    'MellowMaple', 'QuietWalnut', 'CozyWalnut', 'JollyWalnut', 'SwiftSparrow', 'AmberSparrow', 'CalmSparrow',
+    'WittySparrow', 'MistyBiscuit', 'BraveBiscuit', 'WildBiscuit', 'LuckyOtter', 'TinyOtter', 'SunnyOtter',
+    'RustyPebble', 'DustyPebble', 'MellowPebble', 'QuietBreeze', 'CozyBreeze', 'JollyBreeze', 'SwiftLantern'
+  ],
+  [
+    'RapidTiger', 'CrystalWolf', 'NeonPhantom', 'CosmicFlare', 'MysticRaven', 'TurboNinja', 'LunarGhost',
+    'ArcticBlaze', 'ThunderAce', 'VelvetStorm', 'TurboFalcon', 'LaserFalcon', 'NeonPanther', 'TerraPanther',
+    'FrostViper', 'BlazeViper', 'PixelLynx', 'HyperCobra', 'MagmaCobra', 'CyberRaptor', 'IronRaptor', 'VoltShark',
+    'TurboMantis', 'LaserMantis', 'NeonJaguar', 'TerraJaguar', 'FrostHornet', 'BlazeHornet', 'PixelFalcon',
+    'HyperPanther', 'MagmaPanther', 'CyberViper', 'IronViper', 'VoltLynx', 'TurboCobra', 'LaserCobra', 'NeonRaptor',
+    'TerraRaptor', 'FrostShark', 'BlazeShark', 'PixelMantis', 'HyperJaguar', 'MagmaJaguar', 'CyberHornet',
+    'IronHornet', 'VoltFalcon', 'TurboPanther', 'LaserPanther', 'NeonViper', 'TerraViper', 'FrostLynx', 'BlazeLynx',
+    'PixelCobra', 'HyperRaptor', 'MagmaRaptor', 'CyberShark'
+  ],
+  [
+    'QuantumFox', 'VoidWalker', 'SolarReign', 'NightCipher', 'OmegaDrift', 'QuantumRaider', 'PlasmaRaider',
+    'ZeroRaider', 'SolarPhantom', 'CipherPhantom', 'AstralVortex', 'PhotonVortex', 'IonVortex', 'LunarSentinel',
+    'OmegaSentinel', 'VoidWarden', 'VectorWarden', 'QuantumSpecter', 'PlasmaSpecter', 'ZeroSpecter', 'SolarOracle',
+    'CipherOracle', 'AstralReaper', 'PhotonReaper', 'IonReaper', 'LunarDrifter', 'OmegaDrifter', 'VoidRaider',
+    'VectorRaider', 'QuantumPhantom', 'PlasmaPhantom', 'ZeroPhantom', 'SolarVortex', 'CipherVortex', 'AstralSentinel',
+    'PhotonSentinel', 'IonSentinel', 'LunarWarden', 'OmegaWarden', 'VoidSpecter', 'VectorSpecter', 'QuantumOracle',
+    'PlasmaOracle', 'ZeroOracle'
+  ],
+  [
+    'PhantomZero', 'DarkMatter', 'HyperNova', 'ZeroGravity', 'DragonFang', 'IronSpecter', 'BlazeWraith', 'FrostTitan',
+    'StormBringer', 'ShadowMonarch', 'CrimsonKing', 'NeonSamurai', 'VoltReaper', 'ArcLight', 'GhostProtocol',
+    'StarForged', 'DoomBringer', 'SkyBreaker', 'RiftWalker', 'SoulReaper', 'EmberLord', 'GlitchKing', 'PrismKnight',
+    'ApexHunter', 'OnyxBlade', 'SolarFlare', 'TitanFall', 'WarpDrive', 'NovaStrike', 'VenomFang', 'TempestX',
+    'CyberWolf', 'GalaxyRider', 'LuckyStrike'
+  ],
+  [
+    'AstraPrime', 'Nightfall', 'Zenith', 'Seraph', 'Eclipse', 'Aurora', 'Valkyrie', 'Titan', 'Phoenix', 'Leviathan',
+    'Oblivion', 'Paragon', 'Solstice', 'Nebula', 'Zephyr', 'Obsidian', 'Archon', 'Helios', 'Chronos', 'Ragnarok',
+    'Valhalla', 'Eternity'
+  ],
+  [
+    'Xyro', 'Qyro', 'Nyx', 'Zyro', 'Kyro', 'Vyro', 'Xyra', 'Nyxo', 'Qyra', 'Zyx', 'Vyx', 'Kex', 'Jyx', 'Ryx'
+  ],
+  [
+    'Vex', 'Zy', 'Ky', 'Xo', 'Qi', 'Zex'
+  ],
+  [
+    'Q', 'X', 'K', 'V', 'Z'
+  ]
+  ];
+  var DB = [], INDEX = {};
+  NAMES.forEach(function (list, ri) {
+    list.forEach(function (n) { DB.push({ name: n, r: ri }); INDEX[n] = ri; });
+  });
+  var TOTAL = DB.length;
+  var HISTORY_MAX = 20;
+  var reduced = false;
+  try { reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+  var HUNT_MS = reduced ? 400 : 900;
+
+  var state = freshState();
+  var storageOK = true;
+  var busy = false;
+  var huntTimer = null;
+  var toastTimer = null;
+  var ui = { cq: '', cf: 'all', iq: '', xf: 'all', rc: 'rare' };
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, txt) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (txt != null) e.textContent = txt;
+    return e;
+  }
+  function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+  function has(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
+
+  /* ---------- state & saving ---------- */
+  function newId() {
+    var a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789', s = '';
+    for (var i = 0; i < 8; i++) s += a.charAt(Math.floor(Math.random() * a.length));
+    return s;
+  }
+  function freshState(pid, pname) {
+    var c = {}; c[STARTER] = 1;
+    return { counts: c, hunts: 0, dupes: 0, history: [], coins: 0, best: null, equipped: STARTER, redeemed: [], pid: pid || newId(), pname: pname || null, lobby: null };
+  }
+  function unique() {
+    var n = 0;
+    for (var k in state.counts) { if (has(state.counts, k) && state.counts[k] > 0) n++; }
+    return n;
+  }
+  function isInt(v) { return typeof v === 'number' && isFinite(v) && Math.floor(v) === v && v >= 0 && v <= 1e9; }
+
+  function sanitize(o) {
+    var s = freshState(), p = [];
+    if (!o || typeof o !== 'object' || Array.isArray(o)) return { state: s, problems: ['The save is not a valid object.'] };
+    var c = o.counts;
+    if (!c || typeof c !== 'object' || Array.isArray(c)) {
+      p.push('Missing collection data.');
+    } else {
+      Object.keys(c).forEach(function (k) {
+        if (!has(INDEX, k)) p.push('Unknown username in save.');
+        else if (!isInt(c[k])) p.push('Invalid find count for ' + k + '.');
+        else if (c[k] > 0) s.counts[k] = c[k];
+      });
+    }
+    if (isInt(o.hunts)) s.hunts = o.hunts; else p.push('Invalid total hunts.');
+    if (isInt(o.dupes)) s.dupes = o.dupes; else p.push('Invalid duplicate count.');
+    if (isInt(o.hunts) && isInt(o.dupes) && o.dupes > o.hunts) p.push('Duplicates cannot exceed total hunts.');
+    if (o.history !== undefined) {
+      if (!Array.isArray(o.history)) p.push('Invalid history.');
+      else {
+        o.history.forEach(function (h) {
+          if (h && typeof h === 'object' && typeof h.n === 'string' && has(INDEX, h.n) && typeof h.d === 'boolean' && typeof h.t === 'number' && isFinite(h.t) && s.history.length < HISTORY_MAX) {
+            s.history.push({ n: h.n, d: h.d, t: h.t });
+          }
+        });
+      }
+    }
+    if (o.coins !== undefined) { if (isInt(o.coins)) s.coins = o.coins; else p.push('Invalid coins.'); }
+    if (o.best != null) {
+      if (typeof o.best === 'object' && typeof o.best.n === 'string' && has(INDEX, o.best.n)) s.best = { n: o.best.n };
+      else p.push('Invalid rarest roll.');
+    }
+    if (!s.best && s.hunts > 0) {
+      var bi = -1, bn = null;
+      Object.keys(s.counts).forEach(function (k) { if (INDEX[k] > bi) { bi = INDEX[k]; bn = k; } });
+      if (bn) s.best = { n: bn };
+    }
+    if (typeof o.equipped === 'string' && has(INDEX, o.equipped) && s.counts[o.equipped] > 0) s.equipped = o.equipped;
+    if (Array.isArray(o.redeemed)) {
+      o.redeemed.forEach(function (r) { if (typeof r === 'string' && has(CODES, r) && s.redeemed.indexOf(r) < 0) s.redeemed.push(r); });
+    }
+    if (typeof o.pid === 'string' && ID_RE.test(o.pid)) s.pid = o.pid;
+    if (o.pname != null) {
+      if (typeof o.pname === 'string' && NAME_RE.test(o.pname)) s.pname = o.pname; else p.push('Invalid player name.');
+    }
+    if (o.lobby != null) {
+      var lb = cleanLobby(o.lobby);
+      if (lb) s.lobby = lb; else p.push('Invalid lobby.');
+    }
+    return { state: s, problems: p };
+  }
+  function cleanCard(c) {
+    if (!c || typeof c !== 'object' || Array.isArray(c)) return null;
+    if (typeof c.pid !== 'string' || !ID_RE.test(c.pid)) return null;
+    if (typeof c.name !== 'string' || !has(INDEX, c.name)) return null;
+    if (!isInt(c.rolls) || !isInt(c.coins) || !isInt(c.uniq) || c.uniq < 1 || c.uniq > TOTAL) return null;
+    var best = null;
+    if (c.best != null) { if (typeof c.best !== 'string' || !has(INDEX, c.best)) return null; best = c.best; }
+    if (typeof c.lobby !== 'string' || !LOBBY_RE.test(c.lobby)) return null;
+    var pn = null;
+    if (c.pname != null) { if (typeof c.pname !== 'string' || !NAME_RE.test(c.pname)) return null; pn = c.pname; }
+    return { pid: c.pid, pname: pn, name: c.name, rolls: c.rolls, coins: c.coins, uniq: c.uniq, best: best, lobby: c.lobby, t: (typeof c.t === 'number' && isFinite(c.t)) ? c.t : 0 };
+  }
+  function cleanLobby(l) {
+    if (!l || typeof l !== 'object' || Array.isArray(l)) return null;
+    if (typeof l.code !== 'string' || !LOBBY_RE.test(l.code)) return null;
+    var name = typeof l.name === 'string' ? l.name.trim().slice(0, 24) : '';
+    if (!name) name = 'Lobby ' + l.code;
+    var mem = [], seen = {};
+    if (Array.isArray(l.members)) {
+      l.members.forEach(function (m) {
+        var cc = cleanCard(m);
+        if (cc && cc.lobby === l.code && !has(seen, cc.pid) && mem.length < MAX_MEMBERS) { seen[cc.pid] = 1; mem.push(cc); }
+      });
+    }
+    return { code: l.code, name: name, members: mem };
+  }
+  function serialize() {
+    return { game: 'UsernameHunter', version: 2, counts: state.counts, hunts: state.hunts, dupes: state.dupes, history: state.history, coins: state.coins, best: state.best, equipped: state.equipped, redeemed: state.redeemed, pid: state.pid, pname: state.pname, lobby: state.lobby, unique: unique() };
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(serialize())); storageOK = true; }
+    catch (e) { storageOK = false; }
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      storageOK = true;
+      if (!raw) return freshState();
+      return sanitize(JSON.parse(raw)).state;
+    } catch (e) {
+      try { localStorage.setItem(KEY + '.test', '1'); localStorage.removeItem(KEY + '.test'); } catch (e2) { storageOK = false; }
+      return freshState();
+    }
+  }
+
+  /* ---------- hunting logic ---------- */
+  function rollRarity() {
+    var r = Math.floor(Math.random() * 1000), acc = 0;
+    for (var i = 0; i < RARITIES.length; i++) {
+      acc += RARITIES[i].w;
+      if (r < acc) return i;
+    }
+    return 0;
+  }
+  function pickName(ri) {
+    var list = NAMES[ri];
+    var i = Math.floor(Math.random() * list.length);
+    if (i >= list.length) i = list.length - 1;
+    return list[i];
+  }
+  // Duplicates are never rerolled or excluded: any username can come back at any time.
+  function applyHunt(forced) {
+    var name = forced && has(INDEX, forced) ? forced : pickName(rollRarity());
+    var had = (state.counts[name] || 0) > 0;
+    state.counts[name] = (state.counts[name] || 0) + 1;
+    state.hunts++;
+    if (had) state.dupes++;
+    state.history.unshift({ n: name, d: had, t: Date.now() });
+    if (state.history.length > HISTORY_MAX) state.history.length = HISTORY_MAX;
+    var gain = had ? Math.floor(COINS[INDEX[name]] / 2) : COINS[INDEX[name]];
+    state.coins += gain;
+    if (!state.best || INDEX[name] > INDEX[state.best.n]) state.best = { n: name };
+    return { name: name, ri: INDEX[name], dup: had, count: state.counts[name], coins: gain };
+  }
+
+  function setBusy(on) {
+    var s = document.querySelectorAll('.sphere'), b = document.querySelectorAll('.btn[data-hunt]'), i;
+    for (i = 0; i < s.length; i++) { s[i].classList.toggle('charging', on); s[i].disabled = on; }
+    for (i = 0; i < b.length; i++) { b[i].disabled = on; b[i].textContent = on ? 'HUNTING\u2026' : b[i].getAttribute('data-label'); }
+  }
+  function hunt() {
+    if (busy || !$('reveal').hidden) return;
+    busy = true;
+    setBusy(true);
+    huntTimer = setTimeout(function () {
+      var res;
+      try {
+        res = applyHunt();
+        save();
+        renderAll();
+        showReveal(res);
+      } catch (e) {
+        busy = false; setBusy(false);
+        toast('Something went wrong. Please try again.');
+        if (window.console) console.error(e);
+      }
+    }, HUNT_MS);
+  }
+
+  /* ---------- reveal ---------- */
+  var T_PARTICLES = [0, 8, 14, 22, 30, 40, 50, 64];
+  var T_RINGS = [1, 1, 2, 2, 3, 4, 5, 6];
+  var T_DELAY = [0, 0.05, 0.15, 0.25, 0.5, 0.7, 0.9, 1.2];
+  var T_FLASH = [0, 0, 0.25, 0.35, 0.7, 0.8, 0.9, 1];
+  var T_BG = [0.15, 0.2, 0.3, 0.35, 0.45, 0.5, 0.6, 0.7];
+
+  function showReveal(res) {
+    var t = res.ri, R = RARITIES[t], rv = $('reveal'), fx = $('rv-fx'), i;
+    rv.className = 'reveal tier-' + t;
+    rv.style.setProperty('--c', R.color);
+    rv.style.setProperty('--cd', T_DELAY[t] + 's');
+    rv.style.setProperty('--bgo', T_BG[t]);
+    $('rv-icon').textContent = R.icon;
+    $('rv-rarity').textContent = R.name.toUpperCase();
+    var badge = $('rv-badge');
+    badge.className = 'rv-badge ' + (res.dup ? 'dup' : 'new');
+    badge.textContent = res.dup ? 'DUPLICATE' : 'NEW!';
+    $('rv-name').textContent = res.name;
+    $('rv-count').textContent = 'Total found: ' + res.count + (res.dup ? ' times' : ' time');
+    $('rv-progress').textContent = 'Collection: ' + unique() + ' / ' + TOTAL;
+    $('rv-coins').textContent = '+' + res.coins + ' coins';
+    $('rv-rays').hidden = t < 5;
+    clear(fx);
+    if (t >= 2) {
+      var fl = el('div', 'rv-flash');
+      fl.style.setProperty('--fo', T_FLASH[t]);
+      fx.appendChild(fl);
+    }
+    for (i = 0; i < T_RINGS[t]; i++) {
+      var ring = el('div', 'rv-ring');
+      ring.style.setProperty('--i', i);
+      fx.appendChild(ring);
+    }
+    for (i = 0; i < T_PARTICLES[t]; i++) {
+      var p = el('div', 'rv-p'), a = Math.random() * Math.PI * 2, d = 90 + Math.random() * (110 + t * 22);
+      p.style.setProperty('--dx', Math.round(Math.cos(a) * d) + 'px');
+      p.style.setProperty('--dy', Math.round(Math.sin(a) * d) + 'px');
+      p.style.setProperty('--d', (Math.random() * 0.35).toFixed(2) + 's');
+      fx.appendChild(p);
+    }
+    rv.hidden = false;
+    if (t >= 6 && !reduced) {
+      rv.classList.add('shake');
+      setTimeout(function () { rv.classList.remove('shake'); }, 600);
+    }
+    try { $('rv-continue').focus(); } catch (e) {}
+  }
+  function closeReveal() {
+    $('reveal').hidden = true;
+    clear($('rv-fx'));
+    busy = false;
+    setBusy(false);
+  }
+
+  /* ---------- rendering ---------- */
+  function fmtTime(t) {
+    try { return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; }
+  }
+  function rarityCard(name, ri, extra, sub) {
+    var R = RARITIES[ri], c = el('div', 'card');
+    c.style.setProperty('--c', R.color);
+    c.appendChild(el('div', 'ic', R.icon));
+    var nm = el('div', 'nm', name);
+    if (sub) nm.appendChild(el('span', 'sm', sub));
+    c.appendChild(nm);
+    if (extra) c.appendChild(extra);
+    return c;
+  }
+  function emptyBox(title, text) {
+    var e = el('div', 'empty'); e.appendChild(el('b', null, '\u2726'));
+    e.appendChild(el('div', null, title));
+    e.appendChild(el('div', 'sm', text));
+    return e;
+  }
+  function pill(ri) { var p = el('span', 'pill', RARITIES[ri].name); p.style.setProperty('--c', RARITIES[ri].color); return p; }
+
+  function renderStats() {
+    var u = unique(), pct = Math.round(u / TOTAL * 100);
+    $('top-progress').textContent = u + ' / ' + TOTAL;
+    $('top-coins').textContent = '◎ ' + state.coins;
+    $('hm-coins').textContent = state.coins;
+    $('st-coins').textContent = state.coins;
+    $('st-best').textContent = state.best ? RARITIES[INDEX[state.best.n]].name : '—';
+    var eq = $('hm-equipped'); eq.textContent = state.equipped; eq.style.color = RARITIES[INDEX[state.equipped]].color;
+    $('hm-pname').textContent = state.pname || 'not set';
+    $('index-lead').textContent = 'All ' + TOTAL + ' usernames. Undiscovered ones stay locked until you hunt them.';
+    $('pname-form').hidden = !!state.pname;
+    $('pname-set').hidden = !state.pname;
+    $('pname-show').textContent = state.pname || '';
+    $('hm-unique').textContent = u + ' / ' + TOTAL;
+    $('hm-hunts').textContent = state.hunts;
+    $('hm-bar').style.width = pct + '%';
+    $('st-unique').textContent = u + ' / ' + TOTAL;
+    $('st-hunts').textContent = state.hunts;
+    $('st-dupes').textContent = state.dupes;
+    $('st-percent').textContent = pct + '%';
+    $('st-bar').style.width = pct + '%';
+    $('index-progress').textContent = u + ' / ' + TOTAL;
+    $('index-bar').style.width = pct + '%';
+    var last = $('st-last'); clear(last);
+    var h = state.history[0];
+    if (!h) last.appendChild(el('div', 'lead', 'No hunts yet. Tap the sphere!'));
+    else {
+      var tag = el('span', 'tag ' + (h.d ? 'dup' : 'new'), h.d ? 'DUPLICATE' : 'NEW');
+      last.appendChild(rarityCard(h.n, INDEX[h.n], tag, RARITIES[INDEX[h.n]].name + ' \u00B7 found ' + (state.counts[h.n] || 0) + '\u00D7'));
+    }
+    var hl = $('history-list'); clear(hl);
+    if (!state.history.length) hl.appendChild(emptyBox('Nothing here yet', 'Your recent hunts will show up here.'));
+    state.history.slice(0, 10).forEach(function (x) {
+      var tg = el('span', 'tag ' + (x.d ? 'dup' : 'new'), x.d ? 'DUP' : 'NEW');
+      hl.appendChild(rarityCard(x.n, INDEX[x.n], tg, RARITIES[INDEX[x.n]].name + ' \u00B7 ' + fmtTime(x.t)));
+    });
+  }
+  function renderCollection() {
+    var box = $('collection-list'); clear(box);
+    var q = ui.cq.trim().toLowerCase();
+    var items = DB.filter(function (d) {
+      return (state.counts[d.name] || 0) > 0 && (ui.cf === 'all' || ui.cf === String(d.r)) && d.name.toLowerCase().indexOf(q) > -1;
+    }).sort(function (a, b) { return b.r - a.r || (a.name < b.name ? -1 : 1); });
+    $('collection-count').textContent = unique() + ' of ' + TOTAL + ' usernames collected' + (items.length !== unique() ? ' \u00B7 showing ' + items.length : '');
+    if (!items.length) { box.appendChild(emptyBox('No matches', 'Try a different search or filter.')); return; }
+    items.forEach(function (d) {
+      var wrap = el('div');
+      wrap.style.display = 'contents';
+      var right = el('div'); right.style.textAlign = 'right';
+      right.appendChild(pill(d.r));
+      right.appendChild(el('span', 'sm', 'Found \u00D7' + state.counts[d.name]));
+      right.lastChild.style.cssText = 'display:block;font-size:12px;color:#9b8fb8;margin-top:4px';
+      if (state.equipped === d.name) {
+        var et = el('span', 'tag new', 'EQUIPPED');
+        et.style.cssText = 'display:inline-block;margin-top:6px';
+        right.appendChild(et);
+      } else {
+        var eb = el('button', 'btn sm', 'Equip');
+        eb.type = 'button';
+        eb.addEventListener('click', function () { equip(d.name); });
+        right.appendChild(eb);
+      }
+      wrap.appendChild(rarityCard(d.name, d.r, right));
+      box.appendChild(wrap);
+    });
+  }
+  function renderIndex() {
+    var box = $('index-list'); clear(box);
+    var q = ui.iq.trim().toLowerCase(), shown = 0;
+    DB.forEach(function (d) {
+      var found = (state.counts[d.name] || 0) > 0, ok;
+      if (q) ok = found && d.name.toLowerCase().indexOf(q) > -1 && (ui.xf === 'all' || ui.xf === String(d.r));
+      else if (ui.xf === 'all') ok = true;
+      else if (ui.xf === 'locked') ok = !found;
+      else ok = found && ui.xf === String(d.r);
+      if (q && ui.xf === 'locked') ok = false;
+      if (!ok) return;
+      shown++;
+      if (found) {
+        var right = el('div'); right.style.textAlign = 'right';
+        right.appendChild(pill(d.r));
+        var s = el('span', null, '\u00D7' + state.counts[d.name]);
+        s.style.cssText = 'display:block;font-size:12px;color:#9b8fb8;margin-top:4px';
+        right.appendChild(s);
+        box.appendChild(rarityCard(d.name, d.r, right));
+      } else {
+        var c = el('div', 'card locked');
+        c.appendChild(el('div', 'ic', '?'));
+        c.appendChild(el('div', 'nm', '??????'));
+        c.appendChild(el('span', 'pill', 'Locked'));
+        box.appendChild(c);
+      }
+    });
+    if (!shown) box.appendChild(emptyBox('No matches', q || ui.xf !== 'all' ? 'Only discovered usernames can be searched or filtered by rarity.' : 'Nothing to show.'));
+  }
+  function renderSettings() {
+    var tb = $('odds-list'); clear(tb);
+    var total = 0;
+    RARITIES.forEach(function (R, i) {
+      var tr = el('tr'), td = el('td');
+      var s = el('span', null, R.icon + ' ' + R.name); s.style.color = R.color; s.style.fontWeight = '700';
+      td.appendChild(s); tr.appendChild(td);
+      tr.appendChild(el('td', null, String(NAMES[i].length)));
+      tr.appendChild(el('td', null, (R.w / 10).toFixed(1) + '%'));
+      tb.appendChild(tr);
+      total += R.w;
+    });
+    var tr2 = el('tr');
+    tr2.appendChild(el('td', null, 'Total')); tr2.appendChild(el('td', null, String(TOTAL))); tr2.appendChild(el('td', null, (total / 10).toFixed(1) + '%'));
+    tr2.style.fontWeight = '800';
+    tb.appendChild(tr2);
+    var ss = $('storage-status');
+    ss.className = 'msg ' + (storageOK ? 'ok' : 'bad');
+    ss.textContent = storageOK ? 'Browser storage is available. Your progress is being saved.' : 'Browser storage is unavailable here, so progress will be lost when you close the page. Use Export Save to keep a backup.';
+  }
+  function renderAll() { renderStats(); renderCollection(); renderIndex(); renderRanks(); renderLobby(); renderSettings(); }
+
+  /* ---------- equip & codes ---------- */
+  function equip(name) {
+    if (!has(INDEX, name) || !(state.counts[name] > 0)) return;
+    state.equipped = name;
+    save();
+    renderAll();
+    toast('Equipped ' + name + '.');
+  }
+  function redeem() {
+    var inp = $('code-input'), msg = $('code-msg'), code = inp.value.trim().toUpperCase();
+    function say(t, ok) { msg.className = 'msg ' + (ok ? 'ok' : 'bad'); msg.textContent = t; }
+    if (!code) { say('Enter a code first.', false); return; }
+    if (!has(CODES, code)) { say('That code is not valid.', false); return; }
+    if (state.redeemed.indexOf(code) > -1) { say('You already redeemed this code.', false); return; }
+    state.redeemed.push(code);
+    state.coins += CODES[code];
+    save();
+    renderAll();
+    inp.value = '';
+    say('Code accepted! +' + CODES[code] + ' coins.', true);
+  }
+
+  /* ---------- player (base) name ---------- */
+  function lockName() {
+    var msg = $('pname-msg'), v = $('pname-input').value.trim();
+    function say(t) { msg.className = 'msg bad'; msg.textContent = t; }
+    if (state.pname) { say('Your player name is already locked in.'); return; }
+    if (!NAME_RE.test(v)) { say('Use 3 to 16 letters, numbers or underscores (no spaces).'); return; }
+    msg.textContent = '';
+    askConfirm('Lock in "' + v + '"?', 'Your player name is permanent. It cannot be changed or rerolled, and it shows on the leaderboard and in lobbies. It stays even after a progress reset.', 'Lock it in', function () {
+      if (state.pname) return;
+      state.pname = v;
+      save();
+      $('pname-input').value = '';
+      renderAll();
+      toast('Player name set: ' + v);
+    });
+  }
+
+  /* ---------- confirm dialog ---------- */
+  var confirmFn = null;
+  function askConfirm(title, text, okLabel, fn) {
+    $('confirm-title').textContent = title;
+    $('confirm-text').textContent = text;
+    $('confirm-ok').textContent = okLabel;
+    confirmFn = fn;
+    $('confirm').hidden = false;
+    try { $('confirm-cancel').focus(); } catch (e) {}
+  }
+  function closeConfirm() { $('confirm').hidden = true; confirmFn = null; }
+
+  function copyText(text) {
+    function fb() {
+      try {
+        var t = document.createElement('textarea');
+        t.value = text; t.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(t); t.select();
+        var ok = document.execCommand && document.execCommand('copy');
+        document.body.removeChild(t);
+        toast(ok ? 'Copied to clipboard.' : 'Could not copy. Select the text and copy it manually.');
+      } catch (e) { toast('Could not copy. Select the text and copy it manually.'); }
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { toast('Copied to clipboard.'); }, fb);
+      else fb();
+    } catch (e) { fb(); }
+  }
+
+  /* ---------- leaderboard ---------- */
+  var CATS = [{ k: 'rare', t: 'Rarest roll' }, { k: 'rolls', t: 'Most rolls' }, { k: 'coins', t: 'Most coins' }, { k: 'uniq', t: 'Most usernames' }];
+  function entries() {
+    var list = [{ pid: state.pid, pname: state.pname, name: state.equipped, rolls: state.hunts, coins: state.coins, uniq: unique(), best: state.best ? state.best.n : null, me: true }];
+    if (state.lobby) state.lobby.members.forEach(function (m) { list.push(m); });
+    return list;
+  }
+  function metric(e, k) { return k === 'rare' ? (e.best ? INDEX[e.best] + 1 : 0) : e[k]; }
+  function valueText(e, k) {
+    if (k === 'rare') return e.best ? RARITIES[INDEX[e.best]].name + ' · ' + e.best : 'No rolls yet';
+    if (k === 'rolls') return e.rolls + ' rolls';
+    if (k === 'coins') return e.coins + ' coins';
+    return e.uniq + ' / ' + TOTAL + ' usernames';
+  }
+  function buildRankChips() {
+    var box = $('ranks-chips');
+    function mark() {
+      for (var i = 0; i < box.children.length; i++) {
+        var on = box.children[i].getAttribute('data-v') === ui.rc;
+        box.children[i].classList.toggle('on', on);
+        box.children[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+    }
+    CATS.forEach(function (c) {
+      var b = el('button', 'chip', c.t);
+      b.type = 'button';
+      b.setAttribute('data-v', c.k);
+      b.style.setProperty('--c', '#c084fc');
+      b.addEventListener('click', function () { ui.rc = c.k; mark(); renderRanks(); });
+      box.appendChild(b);
+    });
+    mark();
+  }
+  function renderRanks() {
+    var box = $('ranks-list'); clear(box);
+    var k = ui.rc, list = entries();
+    list.sort(function (a, b) { return metric(b, k) - metric(a, k) || b.coins - a.coins || (a.name < b.name ? -1 : 1); });
+    $('ranks-note').textContent = state.lobby
+      ? 'Lobby: ' + state.lobby.name + ' (' + state.lobby.code + '). Friends appear here once you add their score cards.'
+      : 'Only your own stats so far. Create or join a lobby to compare with friends.';
+    list.forEach(function (e, i) {
+      var c = el('div', 'card' + (e.me ? ' me' : ''));
+      c.style.setProperty('--c', RARITIES[INDEX[e.name]].color);
+      c.appendChild(el('div', 'rank' + (i < 3 ? ' r' + (i + 1) : ''), String(i + 1)));
+      var nm = el('div', 'nm', e.pname || e.name);
+      nm.appendChild(el('span', 'sm', (e.pname ? e.name + ' · ' : '') + valueText(e, k) + (e.me ? ' · You' : '')));
+      c.appendChild(nm);
+      box.appendChild(c);
+    });
+  }
+
+  /* ---------- lobby ---------- */
+  function newLobbyCode() {
+    var a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = 'LB-';
+    for (var i = 0; i < 6; i++) s += a.charAt(Math.floor(Math.random() * a.length));
+    return s;
+  }
+  function lobbyMsg(t, ok) { var m = $('lobby-msg'); m.className = 'msg ' + (ok ? 'ok' : 'bad'); m.textContent = t; }
+  function createLobby() {
+    if (state.lobby) return;
+    var name = $('lobby-name').value.trim().slice(0, 24) || 'My Lobby';
+    state.lobby = { code: newLobbyCode(), name: name, members: [] };
+    save();
+    $('lobby-name').value = '';
+    lobbyMsg('', true);
+    renderAll();
+    toast('Lobby created. Share the code with friends.');
+  }
+  function joinLobby() {
+    if (state.lobby) return;
+    var code = $('lobby-code').value.trim().toUpperCase();
+    if (!LOBBY_RE.test(code)) { lobbyMsg('Enter a lobby code like LB-ABC123.', false); return; }
+    state.lobby = { code: code, name: 'Lobby ' + code, members: [] };
+    save();
+    $('lobby-code').value = '';
+    lobbyMsg('', true);
+    renderAll();
+    toast('Joined lobby ' + code + '.');
+  }
+  function leaveLobby() { state.lobby = null; save(); renderAll(); toast('You left the lobby.'); }
+  function removeMember(pid) {
+    if (!state.lobby) return;
+    state.lobby.members = state.lobby.members.filter(function (m) { return m.pid !== pid; });
+    save();
+    renderAll();
+  }
+  function myCard() {
+    return { pid: state.pid, pname: state.pname, name: state.equipped, rolls: state.hunts, coins: state.coins, uniq: unique(), best: state.best ? state.best.n : null, lobby: state.lobby.code, t: Date.now() };
+  }
+  function cardExport() {
+    if (!state.lobby) return;
+    var box = $('card-box');
+    box.value = 'UHCARD:' + JSON.stringify(myCard());
+    try { box.focus(); box.select(); } catch (e) {}
+    toast('Score card ready. Send it to your lobby.');
+  }
+  function cardAdd() {
+    var msg = $('card-msg'), raw = $('card-import').value.trim(), data, c;
+    function say(t, ok) { msg.className = 'msg ' + (ok ? 'ok' : 'bad'); msg.textContent = t; }
+    if (!state.lobby) { say('Join a lobby first.', false); return; }
+    if (!raw) { say('Paste a score card first.', false); return; }
+    if (raw.indexOf('UHCARD:') === 0) raw = raw.slice(7);
+    try { data = JSON.parse(raw); } catch (e) { say('That is not a valid score card.', false); return; }
+    c = cleanCard(data);
+    if (!c) { say('That score card is invalid.', false); return; }
+    if (c.lobby !== state.lobby.code) { say('That card belongs to a different lobby (' + c.lobby + ').', false); return; }
+    if (c.pid === state.pid) { say('That is your own card.', false); return; }
+    var ms = state.lobby.members, idx = -1, i;
+    for (i = 0; i < ms.length; i++) if (ms[i].pid === c.pid) idx = i;
+    if (idx > -1) ms[idx] = c;
+    else if (ms.length >= MAX_MEMBERS) { say('This lobby is full (' + MAX_MEMBERS + ' members).', false); return; }
+    else ms.push(c);
+    save();
+    renderAll();
+    $('card-import').value = '';
+    say(c.name + ' is now in your lobby.', true);
+  }
+  function renderLobby() {
+    var inLobby = !!state.lobby;
+    $('lobby-none').hidden = inLobby;
+    $('lobby-current').hidden = !inLobby;
+    if (!inLobby) return;
+    $('lobby-title').textContent = state.lobby.name;
+    $('lobby-code-show').textContent = state.lobby.code;
+    var ml = $('lobby-members'); clear(ml);
+    if (!state.lobby.members.length) ml.appendChild(emptyBox('No members yet', 'Add a friend’s score card to see them here and on the leaderboard.'));
+    state.lobby.members.forEach(function (m) {
+      var right = el('div'); right.style.textAlign = 'right';
+      right.appendChild(pill(INDEX[m.name]));
+      var rb = el('button', 'btn sm', 'Remove');
+      rb.type = 'button';
+      rb.addEventListener('click', function () { removeMember(m.pid); });
+      right.appendChild(rb);
+      ml.appendChild(rarityCard(m.pname || m.name, INDEX[m.name], right, (m.pname ? m.name + ' · ' : '') + m.rolls + ' rolls · ' + m.coins + ' coins · ' + m.uniq + '/' + TOTAL));
+    });
+  }
+
+  /* ---------- navigation ---------- */
+  var SCREENS = ['home', 'hunt', 'collection', 'index', 'ranks', 'lobby', 'settings'];
+  function show(name) {
+    if (SCREENS.indexOf(name) < 0) name = 'home';
+    SCREENS.forEach(function (s) { $('screen-' + s).classList.toggle('active', s === name); });
+    var btns = document.querySelectorAll('.nav button');
+    for (var i = 0; i < btns.length; i++) {
+      var on = btns[i].getAttribute('data-nav') === name;
+      btns[i].classList.toggle('on', on);
+      if (on) btns[i].setAttribute('aria-current', 'page'); else btns[i].removeAttribute('aria-current');
+    }
+    try { window.scrollTo(0, 0); } catch (e) {}
+    if (name === 'collection') renderCollection();
+    if (name === 'index') renderIndex();
+    if (name === 'ranks') renderRanks();
+    if (name === 'lobby') renderLobby();
+    if (name === 'settings') renderSettings();
+  }
+
+  function toast(msg) {
+    var t = $('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.hidden = true; }, 2600);
+  }
+
+  function buildChips(boxId, key, withLocked, rerender) {
+    var box = $(boxId);
+    var opts = [{ v: 'all', t: 'All' }];
+    RARITIES.forEach(function (R, i) { opts.push({ v: String(i), t: R.name, c: R.color }); });
+    if (withLocked) opts.push({ v: 'locked', t: 'Locked' });
+    function mark() {
+      for (var i = 0; i < box.children.length; i++) {
+        var on = box.children[i].getAttribute('data-v') === ui[key];
+        box.children[i].classList.toggle('on', on);
+        box.children[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+    }
+    opts.forEach(function (o) {
+      var b = el('button', 'chip', o.t);
+      b.type = 'button';
+      b.setAttribute('data-v', o.v);
+      if (o.c) b.style.setProperty('--c', o.c);
+      b.addEventListener('click', function () { ui[key] = o.v; mark(); rerender(); });
+      box.appendChild(b);
+    });
+    mark();
+  }
+
+  /* ---------- export / import / reset ---------- */
+  function doExport() {
+    var box = $('export-box');
+    box.value = JSON.stringify(serialize());
+    try { box.focus(); box.select(); } catch (e) {}
+    toast('Save code ready below. Copy it to keep a backup.');
+  }
+  function doCopy() {
+    var box = $('export-box');
+    if (!box.value) doExport();
+    copyText(box.value);
+  }
+  function doImport() {
+    var msg = $('import-msg'), raw = $('import-box').value.trim(), data, res;
+    function bad(t) { msg.className = 'msg bad'; msg.textContent = t; }
+    if (!raw) { bad('Paste a save code first.'); return; }
+    try { data = JSON.parse(raw); } catch (e) { bad('That is not valid save data (could not read it).'); return; }
+    res = sanitize(data);
+    if (res.problems.length) { bad('Import rejected: ' + res.problems[0]); return; }
+    if (!res.state.pname && state.pname) res.state.pname = state.pname;
+    if (!(data && typeof data.pid === 'string' && ID_RE.test(data.pid))) res.state.pid = state.pid;
+    state = res.state;
+    save();
+    renderAll();
+    $('import-box').value = '';
+    msg.className = 'msg ok';
+    msg.textContent = 'Save imported. You have ' + unique() + ' / ' + TOTAL + ' usernames.';
+  }
+  function doReset() {
+    state = freshState(state.pid, state.pname);
+    save();
+    $('export-box').value = '';
+    $('card-box').value = '';
+    closeConfirm();
+    renderAll();
+    toast('Progress reset. You still have ' + STARTER + '.');
+  }
+
+  /* ---------- init ---------- */
+  function init() {
+    var bg = $('bg'), i;
+    for (i = 0; i < 18; i++) {
+      var d = el('i'), s = 2 + Math.random() * 4;
+      d.style.left = (Math.random() * 100) + '%';
+      d.style.width = d.style.height = s + 'px';
+      d.style.setProperty('--t', (9 + Math.random() * 10).toFixed(1) + 's');
+      d.style.setProperty('--d', (-Math.random() * 14).toFixed(1) + 's');
+      d.style.setProperty('--x', Math.round((Math.random() - 0.5) * 120) + 'px');
+      if (i % 3 === 1) { d.style.background = '#60a5fa'; d.style.boxShadow = '0 0 10px #60a5fa'; }
+      if (i % 3 === 2) { d.style.background = '#ec4899'; d.style.boxShadow = '0 0 10px #ec4899'; }
+      bg.appendChild(d);
+    }
+    state = load();
+    save();
+
+    var h = document.querySelectorAll('[data-hunt]');
+    for (i = 0; i < h.length; i++) h[i].addEventListener('click', hunt);
+    var n = document.querySelectorAll('[data-nav]');
+    for (i = 0; i < n.length; i++) (function (b) { b.addEventListener('click', function () { show(b.getAttribute('data-nav')); }); })(n[i]);
+
+    buildChips('collection-chips', 'cf', false, renderCollection);
+    buildChips('index-chips', 'xf', true, renderIndex);
+    $('collection-search').addEventListener('input', function (e) { ui.cq = e.target.value; renderCollection(); });
+    $('index-search').addEventListener('input', function (e) { ui.iq = e.target.value; renderIndex(); });
+
+    $('rv-continue').addEventListener('click', closeReveal);
+    $('export-btn').addEventListener('click', doExport);
+    $('copy-btn').addEventListener('click', doCopy);
+    $('import-btn').addEventListener('click', doImport);
+    $('reset-btn').addEventListener('click', function () {
+      askConfirm('Reset all progress?', 'This deletes your collection, coins, hunt and duplicate counts, history, redeemed codes and lobby. You will keep the starter username. This cannot be undone.', 'Yes, reset', doReset);
+    });
+    $('confirm-cancel').addEventListener('click', closeConfirm);
+    $('confirm-ok').addEventListener('click', function () { var f = confirmFn; closeConfirm(); if (f) f(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (!$('confirm').hidden) closeConfirm();
+      else if (!$('reveal').hidden) closeReveal();
+    });
+    $('pname-btn').addEventListener('click', lockName);
+    $('pname-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') lockName(); });
+    $('code-btn').addEventListener('click', redeem);
+    $('code-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') redeem(); });
+    $('lobby-create').addEventListener('click', createLobby);
+    $('lobby-join').addEventListener('click', joinLobby);
+    $('lobby-leave').addEventListener('click', function () {
+      askConfirm('Leave lobby?', 'You will lose this lobby and its member list. Your own progress is not affected.', 'Leave', leaveLobby);
+    });
+    $('lobby-copy-code').addEventListener('click', function () { if (state.lobby) copyText(state.lobby.code); });
+    $('card-export').addEventListener('click', cardExport);
+    $('card-copy').addEventListener('click', function () { if (!state.lobby) return; if (!$('card-box').value) cardExport(); copyText($('card-box').value); });
+    $('card-add').addEventListener('click', cardAdd);
+    buildRankChips();
+
+    renderAll();
+    show('home');
+  }
+
+  window.UH = { state: function () { return state; }, rollRarity: rollRarity, pickName: pickName, apply: applyHunt, sanitize: sanitize, DB: DB, RARITIES: RARITIES, NAMES: NAMES, KEY: KEY, CODES: CODES, COINS: COINS };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>
