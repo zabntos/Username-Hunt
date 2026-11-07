@@ -1,0 +1,2964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07030f">
+<title>Username Hunter</title>
+<style>
+:root{--bg:#07030f;--p:#a855f7;--b:#60a5fa;--pk:#ec4899;--gold:#fbbf24;--tx:#f1e9ff;--mut:#9b8fb8;--panel:rgba(255,255,255,.055);--line:rgba(255,255,255,.1)}
+*{box-sizing:border-box}
+html,body{margin:0;color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{min-height:100vh;overflow-x:hidden;background:radial-gradient(ellipse at 15% 0,#2a0a52 0,transparent 55%),radial-gradient(ellipse at 95% 100%,#3a0a45 0,transparent 55%),var(--bg);background-attachment:fixed}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button:disabled{cursor:default}
+[hidden]{display:none!important}
+#bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#bg i{position:absolute;bottom:-14px;border-radius:50%;background:var(--p);box-shadow:0 0 10px var(--p);opacity:0;animation:rise var(--t) linear infinite;animation-delay:var(--d)}
+@keyframes rise{0%{transform:translate3d(0,0,0);opacity:0}10%{opacity:.7}100%{transform:translate3d(var(--x),-110vh,0);opacity:0}}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:rgba(7,3,15,.82);border-bottom:1px solid var(--line)}
+.brand{background:none;border:0;padding:0;font-weight:900;letter-spacing:.14em;font-size:14px;background:linear-gradient(90deg,var(--b),var(--p),var(--pk));-webkit-background-clip:text;background-clip:text;color:transparent}
+.chip-top{font-size:13px;font-weight:700;padding:5px 12px;border-radius:999px;border:1px solid var(--gold);color:var(--gold);background:rgba(251,191,36,.08)}
+main{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:16px 16px calc(96px + env(safe-area-inset-bottom))}
+.screen{display:none}
+.screen.active{display:block;animation:fadein .35s ease both}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h1,h2,h3{margin:0}
+.title{text-align:center;font-size:clamp(34px,11vw,60px);font-weight:900;line-height:1;letter-spacing:.04em;background:linear-gradient(90deg,#8ab4ff,#c084fc,#f472b6,#fbbf24);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite}
+@keyframes shine{to{background-position:200% 0}}
+.sub{text-align:center;color:var(--mut);margin:10px auto 0;max-width:420px;font-size:15px;line-height:1.45}
+h2.h{font-size:24px;margin-bottom:4px}
+.lead{color:var(--mut);font-size:14px;margin:0 0 14px;line-height:1.45}
+.sphere-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;margin:22px 0 8px}
+.sphere{--s:min(70vw,300px);position:relative;width:var(--s);height:var(--s);border:0;background:none;padding:0;border-radius:50%}
+.sphere.small{--s:min(52vw,220px)}
+.orb{position:absolute;inset:9%;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 32% 28%,#fff 0,#f3c4ff 7%,#a855f7 28%,#5b21b6 58%,#1a0838 100%);box-shadow:0 0 36px 6px rgba(168,85,247,.65),0 0 100px 26px rgba(236,72,153,.28),inset 0 0 40px rgba(255,255,255,.2);animation:pulse 3.2s ease-in-out infinite}
+.orb::after{content:"";position:absolute;inset:-20%;border-radius:50%;background:conic-gradient(from 0deg,transparent,rgba(96,165,250,.55),transparent 38%,rgba(236,72,153,.5),transparent 78%);mix-blend-mode:screen;animation:spin 6s linear infinite}
+.orb-label{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;font-weight:900;letter-spacing:.3em;font-size:15px;color:#fff;text-shadow:0 0 12px #000}
+.ring{position:absolute;inset:3%;border-radius:50%;border:2px solid rgba(192,132,252,.55);animation:ringout 3.2s ease-out infinite;pointer-events:none}
+.ring.r2{animation-delay:1.6s}
+@keyframes ringout{0%{transform:scale(.8);opacity:.8}100%{transform:scale(1.25);opacity:0}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sphere:active .orb{transform:scale(.96)}
+.sphere.charging .orb{animation:charge .9s ease-in forwards}
+.sphere.charging .ring{animation-duration:.6s}
+@keyframes charge{0%{transform:scale(1);filter:brightness(1)}25%{transform:scale(.88) rotate(-2deg);filter:brightness(1.2)}60%{transform:scale(1.02) rotate(2deg);filter:brightness(1.6)}100%{transform:scale(1.22);filter:brightness(2.4)}}
+.btn{border:1px solid var(--line);background:var(--panel);padding:12px 22px;border-radius:14px;font-weight:700;font-size:15px}
+.btn.primary{border:0;color:#fff;background:linear-gradient(135deg,#7c3aed,#db2777);box-shadow:0 6px 24px rgba(168,85,247,.45);font-size:18px;letter-spacing:.2em;padding:14px 46px}
+.btn.primary:disabled{opacity:.6}
+.btn.danger{border-color:#ef4444;color:#fecaca;background:rgba(239,68,68,.12)}
+.btn:active{transform:scale(.97)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:14px}
+.panel h3{font-size:16px;margin-bottom:8px}
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat b{display:block;font-size:22px}
+.stat span{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bar{height:8px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--b),var(--p),var(--pk));transition:width .5s}
+.note{font-size:12px;color:var(--mut);text-align:center;margin:18px 0 0;line-height:1.5}
+.search{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.35);color:var(--tx);font-size:16px;margin-bottom:10px}
+.search:focus,textarea:focus{outline:2px solid var(--p)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px;-webkit-overflow-scrolling:touch}
+.chip{--c:#9b8fb8;flex:0 0 auto;border:1px solid var(--line);background:var(--panel);padding:7px 13px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap}
+.chip.on{border-color:var(--c);color:var(--c);background:rgba(255,255,255,.1);box-shadow:0 0 10px -2px var(--c)}
+.list{display:grid;gap:10px;margin-top:8px}
+.card{--c:#9b8fb8;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c)}
+.card .ic{font-size:24px;color:var(--c);text-shadow:0 0 10px var(--c);width:30px;text-align:center;flex:0 0 30px}
+.card .nm{flex:1;min-width:0;font-weight:800;font-size:17px;word-break:break-word}
+.card .sm{font-size:12px;color:var(--mut);font-weight:500;display:block;margin-top:2px}
+.pill{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--c);border:1px solid var(--c);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.card.locked{opacity:.65;border-left-color:#444}
+.card.locked .nm{color:var(--mut);letter-spacing:.25em}
+.card.locked .ic{color:#666;text-shadow:none}
+.tag{font-size:11px;font-weight:800;border-radius:6px;padding:2px 7px;white-space:nowrap}
+.tag.new{background:rgba(52,211,153,.18);color:#6ee7b7}
+.tag.dup{background:rgba(251,191,36,.18);color:var(--gold)}
+.empty{text-align:center;padding:36px 16px;color:var(--mut);border:1px dashed var(--line);border-radius:16px;margin-top:10px}
+.empty b{display:block;font-size:34px;color:var(--p);margin-bottom:6px}
+.odds{width:100%;border-collapse:collapse;font-size:14px}
+.odds td,.odds th{padding:7px 4px;text-align:left;border-bottom:1px solid var(--line)}
+.odds th{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+.odds td:last-child,.odds th:last-child{text-align:right}
+textarea{width:100%;min-height:90px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.4);color:var(--tx);padding:10px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;resize:vertical;margin:8px 0}
+.msg{font-size:13px;min-height:18px;margin:4px 0 0}
+.discord{display:block;text-align:center;margin:0 0 12px;padding:9px 14px;border-radius:12px;background:#5865f2;color:#fff;font-weight:800;font-size:14px;letter-spacing:.04em;text-decoration:none;border:1px solid rgba(255,255,255,.25)}
+.discord:active{filter:brightness(.9)}
+.rk{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.06em;border:1px solid currentColor;vertical-align:middle}
+.msg.ok{color:#6ee7b7}.msg.bad{color:#fca5a5}
+.badge-on{display:inline-block;font-weight:900;font-size:12px;letter-spacing:.1em;color:#6ee7b7;border:1px solid #34d399;border-radius:999px;padding:4px 12px;background:rgba(52,211,153,.1)}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom));background:rgba(10,4,20,.94);border-top:1px solid var(--line)}
+.nav button{flex:1;min-width:0;max-width:120px;background:none;border:0;padding:6px 0;color:var(--mut);font-size:9px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:12px}
+.nav button span{font-size:17px;line-height:1}
+.nav button.on{color:#fff;background:rgba(168,85,247,.22)}
+#toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:90;background:#241046;border:1px solid var(--p);padding:10px 16px;border-radius:12px;font-size:14px;max-width:88vw;text-align:center}
+.modal{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.75)}
+.modal .box{background:#160a2b;border:1px solid var(--p);border-radius:18px;padding:20px;max-width:360px;width:100%}
+.modal h3{margin-bottom:8px}
+.modal p{color:var(--mut);font-size:14px;line-height:1.5;margin:0 0 16px}
+/* reveal */
+.reveal{--c:#9b8fb8;--cd:0s;--bgo:.2;position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,2,12,.94);overflow:hidden}
+.rv-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 48%,var(--c) 0,transparent 62%);opacity:0;animation:bgin 1s ease forwards}
+@keyframes bgin{to{opacity:var(--bgo)}}
+.rv-rays{position:absolute;inset:-60%;background:repeating-conic-gradient(var(--c) 0 6deg,transparent 6deg 18deg);opacity:.16;-webkit-mask-image:radial-gradient(circle,#000 0,transparent 62%);mask-image:radial-gradient(circle,#000 0,transparent 62%);animation:spin 14s linear infinite}
+.rv-fx{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none}
+.rv-flash{position:fixed;inset:0;background:var(--c);opacity:0;animation:flash .8s ease-out forwards}
+@keyframes flash{0%{opacity:var(--fo)}100%{opacity:0}}
+.rv-ring{position:absolute;left:-30px;top:-30px;width:60px;height:60px;border:3px solid var(--c);border-radius:50%;box-shadow:0 0 18px var(--c);opacity:0;animation:rvring 1.7s ease-out forwards;animation-delay:calc(var(--i) * .22s)}
+@keyframes rvring{0%{transform:scale(.2);opacity:.95}100%{transform:scale(15);opacity:0}}
+.rv-p{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);opacity:0;animation:burst 1.5s ease-out forwards;animation-delay:var(--d)}
+@keyframes burst{0%{transform:translate(0,0) scale(1.2);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+.reveal.shake{animation:shake .5s linear}
+@keyframes shake{0%,100%{transform:none}20%{transform:translate(-6px,3px)}40%{transform:translate(6px,-4px)}60%{transform:translate(-4px,-3px)}80%{transform:translate(4px,4px)}}
+.rv-card{position:relative;width:100%;max-width:420px;text-align:center;padding:26px 18px 22px;border-radius:22px;background:rgba(14,6,28,.78);border:2px solid var(--c);box-shadow:0 0 40px -4px var(--c),inset 0 0 30px -12px var(--c);opacity:0;animation:cardin .65s cubic-bezier(.2,1.3,.4,1) forwards;animation-delay:var(--cd)}
+@keyframes cardin{0%{opacity:0;transform:scale(.4) translateY(30px)}100%{opacity:1;transform:none}}
+.rv-icon{font-size:64px;line-height:1;color:var(--c);text-shadow:0 0 24px var(--c),0 0 60px var(--c);animation:pulse 1.8s ease-in-out infinite}
+.rv-rarity{margin-top:10px;font-weight:900;letter-spacing:.28em;font-size:15px;color:var(--c);text-shadow:0 0 12px var(--c)}
+.rv-badge{display:inline-block;margin-top:12px;padding:5px 16px;border-radius:999px;font-weight:900;letter-spacing:.14em;font-size:13px}
+.rv-badge.new{background:rgba(52,211,153,.2);color:#6ee7b7;border:1px solid #34d399}
+.rv-badge.dup{background:rgba(251,191,36,.2);color:var(--gold);border:1px solid var(--gold)}
+.rv-name{margin:14px 0 6px;font-size:clamp(30px,10vw,54px);font-weight:900;word-break:break-word;color:#fff;text-shadow:0 0 22px var(--c),0 0 4px var(--c)}
+.rv-count{color:var(--mut);font-size:14px;margin:0}
+.rv-card .btn{margin-top:20px;min-width:180px}
+.tier-7 .rv-name{background:linear-gradient(90deg,#fff,#ffd84a,#ff7ad9,#7ad7ff,#fff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 0 14px var(--c));animation:shine 3s linear infinite}
+.tier-6 .rv-name{filter:drop-shadow(0 0 10px var(--c))}
+.mini{grid-template-columns:repeat(3,1fr)}
+.mini .stat b{font-size:19px}
+.tops{display:flex;gap:6px}
+.chip-top.coin{border-color:#60a5fa;color:#9cc7ff;background:rgba(96,165,250,.1)}
+.playing{text-align:center;margin:12px 0 0;font-size:14px;color:var(--mut)}
+.playing b{font-size:16px}
+.btn.sm{padding:6px 12px;font-size:12px;border-radius:10px;margin-top:6px}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:22px;letter-spacing:.14em;color:var(--gold)}
+.rank{width:30px;flex:0 0 30px;text-align:center;font-weight:900;font-size:18px;color:var(--mut)}
+.rank.r1{color:#ffd84a}.rank.r2{color:#d0d8e6}.rank.r3{color:#e09a5b}
+.card.me{box-shadow:inset 0 0 0 1px var(--p)}
+.rv-coins{margin:10px 0 0;font-weight:800;color:var(--gold);font-size:15px}
+.topbar{flex-wrap:wrap}
+.luckbar{flex:1 1 100%;text-align:center;font-size:12px;font-weight:900;letter-spacing:.08em;color:#1a0838;background:linear-gradient(90deg,#fbbf24,#f472b6,#a855f7);border-radius:8px;padding:3px 8px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+</head>
+<body>
+<div id="bg" aria-hidden="true"></div>
+
+<header class="topbar">
+  <button type="button" class="brand" data-nav="home">USERNAME HUNTER</button>
+  <div class="tops"><div class="chip-top coin" id="top-coins">&#9678; 0</div><div class="chip-top" id="top-progress">0 / 46</div></div>
+  <div class="luckbar" id="luck-bar" hidden></div>
+</header>
+
+<main>
+  <section id="screen-home" class="screen active" aria-label="Home">
+    <a class="discord" href="https://discord.gg/jJeceBp9" target="_blank" rel="noopener noreferrer">Join our Discord</a>
+    <h1 class="title">USERNAME<br>HUNTER</h1>
+    <p class="sub">Tap the glowing sphere to hunt a username. Duplicates are part of the game.</p>
+    <p class="playing">Player: <b id="hm-pname"></b> &middot; Equipped: <b id="hm-equipped"></b></p>
+    <div class="sphere-wrap">
+      <button type="button" class="sphere" data-hunt aria-label="Hunt a username">
+        <span class="ring"></span><span class="ring r2"></span>
+        <span class="orb"></span><span class="orb-label">TAP</span>
+      </button>
+      <button type="button" class="btn primary" data-hunt data-label="HUNT">HUNT</button>
+    </div>
+    <div class="mini">
+      <div class="stat"><span>Collected</span><b id="hm-unique">0 / 46</b></div>
+      <div class="stat"><span>Total hunts</span><b id="hm-hunts">0</b></div>
+      <div class="stat"><span>Coins</span><b id="hm-coins">0</b></div>
+    </div>
+    <div class="bar" aria-hidden="true"><i id="hm-bar"></i></div>
+    <div class="panel">
+      <h3>Player name</h3>
+      <div id="pname-set" hidden>
+        <p class="lead" style="margin:0">Your permanent player name: <b id="pname-show" style="color:var(--gold)"></b> <span id="pname-rank" class="rk"></span></p>
+      </div>
+      <div id="pname-form">
+        <p class="lead">Choose your player name. It shows on the leaderboard and in lobbies, and it can never be changed or rerolled.</p>
+        <div class="row" style="flex-wrap:nowrap">
+          <input type="text" id="pname-input" class="search" style="margin:0" placeholder="3-16 letters, numbers, _" maxlength="16" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <button type="button" class="btn" id="pname-btn">Lock In</button>
+        </div>
+        <p class="msg" id="pname-msg" role="status"></p>
+        <button type="button" class="btn sm" id="pname-login">I already have an account</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Redeem a code</h3>
+      <div class="row" style="flex-wrap:nowrap">
+        <input type="text" id="code-input" class="search" style="margin:0" placeholder="Enter code" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <button type="button" class="btn" id="code-btn">Redeem</button>
+      </div>
+      <p class="msg" id="code-msg" role="status"></p>
+    </div>
+    <p class="note">Offline collection game. The usernames are not claimed or reserved on any real platform.</p>
+  </section>
+
+  <section id="screen-hunt" class="screen" aria-label="Hunt">
+    <h2 class="h">Hunt</h2>
+    <p class="lead">Tap the sphere or press Hunt. Every hunt gives exactly one username.</p>
+    <div class="sphere-wrap" style="margin-top:6px">
+      <button type="button" class="sphere small" data-hunt aria-label="Hunt a username">
+        <span class="ring"></span><span class="ring r2"></span>
+        <span class="orb"></span><span class="orb-label">TAP</span>
+      </button>
+      <button type="button" class="btn primary" data-hunt data-label="HUNT">HUNT</button>
+    </div>
+    <div class="grid2" style="margin-top:18px">
+      <div class="stat"><span>Unique found</span><b id="st-unique">0 / 46</b></div>
+      <div class="stat"><span>Total hunts</span><b id="st-hunts">0</b></div>
+      <div class="stat"><span>Duplicates</span><b id="st-dupes">0</b></div>
+      <div class="stat"><span>Progress</span><b id="st-percent">0%</b></div>
+      <div class="stat"><span>Coins</span><b id="st-coins">0</b></div>
+      <div class="stat"><span>Rarest roll</span><b id="st-best">&mdash;</b></div>
+    </div>
+    <div class="bar" aria-hidden="true"><i id="st-bar"></i></div>
+    <div class="panel"><h3>Last username found</h3><div id="st-last"></div></div>
+    <div class="panel"><h3>Recent hunts</h3><div class="list" id="history-list"></div></div>
+  </section>
+
+  <section id="screen-collection" class="screen" aria-label="Collection">
+    <h2 class="h">Collection</h2>
+    <p class="lead" id="collection-count"></p>
+    <input type="search" id="collection-search" class="search" placeholder="Search your usernames…" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="chips" id="collection-chips"></div>
+    <div class="list" id="collection-list"></div>
+  </section>
+
+  <section id="screen-index" class="screen" aria-label="Index">
+    <h2 class="h">Index</h2>
+    <p class="lead" id="index-lead">Undiscovered usernames stay locked until you hunt them.</p>
+    <div class="stat"><span>Unique progress</span><b id="index-progress">0 / 46</b><div class="bar"><i id="index-bar"></i></div></div>
+    <div style="height:12px"></div>
+    <input type="search" id="index-search" class="search" placeholder="Search discovered usernames…" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="chips" id="index-chips"></div>
+    <div class="list" id="index-list"></div>
+  </section>
+
+  <section id="screen-settings" class="screen" aria-label="Settings">
+    <h2 class="h">Settings</h2>
+    <div class="panel" id="admin-panel" hidden>
+      <h3 id="admin-title">Admin panel</h3>
+      <div class="chips" style="margin:0">
+        <button type="button" class="chip on" id="admin-tab-local" style="--c:#fbbf24">My side</button>
+        <button type="button" class="chip" id="admin-tab-global" style="--c:#fbbf24">Global</button>
+        <button type="button" class="chip" id="admin-tab-players" style="--c:#ec4899" hidden>Players</button>
+      </div>
+      <div id="admin-local">
+        <p class="lead">Only affects this device. Choose the strength and how long it lasts.</p>
+        <p class="lead" style="margin:14px 0 4px"><b>Luck boost</b></p>
+        <div class="row" style="flex-wrap:nowrap;align-items:flex-end">
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Strength</div><select id="admin-mult" class="search" style="margin:0"><option value="2">2x</option><option value="3">3x</option><option value="5">5x</option><option value="10">10x</option></select></div>
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Length</div><input type="number" id="admin-mins" class="search" style="margin:0" value="10" min="1" inputmode="numeric"></div>
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Unit</div><select id="admin-unit" class="search" style="margin:0"><option value="1">minutes</option><option value="60">hours</option><option value="1440">days</option></select></div>
+        </div>
+        <div class="row"><button type="button" class="btn primary" id="admin-start">Start luck boost</button><button type="button" class="btn" id="admin-stop">Stop</button></div>
+        <p class="lead" style="margin:14px 0 4px"><b>Coin boost (multiplies coins from every hunt)</b></p>
+        <div class="row" style="flex-wrap:nowrap;align-items:flex-end">
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Strength</div><select id="admin-cmult" class="search" style="margin:0"><option value="2">2x</option><option value="3">3x</option><option value="5">5x</option><option value="10">10x</option></select></div>
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Length</div><input type="number" id="admin-cmins" class="search" style="margin:0" value="10" min="1" inputmode="numeric"></div>
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Unit</div><select id="admin-cunit" class="search" style="margin:0"><option value="1">minutes</option><option value="60">hours</option><option value="1440">days</option></select></div>
+        </div>
+        <div class="row"><button type="button" class="btn" id="admin-cstart">Start coin boost</button><button type="button" class="btn" id="admin-cstop">Stop</button></div>
+        <p class="lead" style="margin:14px 0 4px"><b>Mega boost (luck and coins together)</b></p>
+        <div class="row" style="flex-wrap:nowrap;align-items:flex-end">
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Strength</div><select id="admin-gmult" class="search" style="margin:0"><option value="2">2x</option><option value="3">3x</option><option value="5">5x</option><option value="10">10x</option></select></div>
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Length</div><input type="number" id="admin-gmins" class="search" style="margin:0" value="10" min="1" inputmode="numeric"></div>
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Unit</div><select id="admin-gunit" class="search" style="margin:0"><option value="1">minutes</option><option value="60">hours</option><option value="1440">days</option></select></div>
+        </div>
+        <div class="row"><button type="button" class="btn" id="admin-gstart">Start mega boost</button></div>
+        <p class="lead" style="margin:14px 0 4px"><b>Guaranteed rarity (the next hunts are at least this rare)</b></p>
+        <div class="row" style="flex-wrap:nowrap;align-items:flex-end">
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Hunts</div><input type="number" id="admin-guar-n" class="search" style="margin:0" value="10" min="1" inputmode="numeric"></div>
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">At least</div><select id="admin-guar-r" class="search" style="margin:0"></select></div>
+        </div>
+        <div class="row"><button type="button" class="btn" id="admin-guar-start">Start</button><button type="button" class="btn" id="admin-guar-stop">Stop</button></div>
+        <p class="lead" style="margin:14px 0 4px"><b>Give yourself coins</b></p>
+        <div class="row" style="flex-wrap:nowrap;align-items:flex-end">
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Amount</div><input type="number" id="admin-coins" class="search" style="margin:0" value="10000" min="1" inputmode="numeric"></div>
+          <button type="button" class="btn" id="admin-addcoins">Add</button>
+        </div>
+        <p class="lead" style="margin:14px 0 4px"><b>Give yourself a username</b></p>
+        <div class="row" style="flex-wrap:nowrap"><select id="admin-give" class="search" style="margin:0"></select><button type="button" class="btn" id="admin-give-btn">Give</button></div>
+        <div class="row" style="margin-top:12px"><button type="button" class="btn danger" id="admin-stopall">Stop all my boosts</button></div>
+        <p class="msg" id="admin-status" role="status"></p>
+      </div>
+      <div id="admin-global" hidden>
+        <p class="lead">These tools use the online database, so they need an internet connection and the newest setup SQL. The server checks your code, so enter it here (it is not saved).</p>
+        <input type="password" id="admin-pass" class="search" placeholder="Admin or owner code" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <p class="lead" style="margin:14px 0 4px"><b>Global event (a boost for every player at once)</b></p>
+        <div class="row" style="flex-wrap:nowrap;align-items:flex-end">
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Type</div><select id="ev-type" class="search" style="margin:0"><option value="luck">Luck boost</option><option value="coins">Coin boost</option><option value="both">Luck + coins</option></select></div>
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Strength</div><select id="ev-mult" class="search" style="margin:0"><option value="2">2x</option><option value="3">3x</option><option value="5">5x</option><option value="10">10x</option></select></div>
+        </div>
+        <div class="row" style="flex-wrap:nowrap;align-items:flex-end;margin-top:8px">
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Length</div><input type="number" id="ev-mins" class="search" style="margin:0" value="30" min="1" inputmode="numeric"></div>
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Unit</div><select id="ev-unit" class="search" style="margin:0"><option value="1">minutes</option><option value="60">hours</option><option value="1440">days</option></select></div>
+        </div>
+        <div class="row"><button type="button" class="btn primary" id="ev-start">Start event</button><button type="button" class="btn" id="ev-stop">End event</button></div>
+        <p class="msg" id="ev-status" role="status"></p>
+        <p class="msg" id="ev-msg" role="status"></p>
+        <p class="lead" style="margin:14px 0 4px"><b>Code creator</b></p>
+        <input type="text" id="ac-name" class="search" placeholder="Code name (empty = random)" maxlength="20" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false">
+        <div class="row" style="flex-wrap:nowrap;align-items:flex-end">
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Type</div><select id="ac-kind" class="search" style="margin:0"><option value="luck">Luck boost</option><option value="coins">Coin boost</option><option value="gift">Coin gift</option></select></div>
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Strength</div><select id="ac-mult" class="search" style="margin:0"><option value="2">2x</option><option value="3">3x</option><option value="5">5x</option><option value="10">10x</option></select></div>
+        </div>
+        <div class="row" style="flex-wrap:nowrap;align-items:flex-end;margin-top:8px">
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Boost length (min)</div><input type="number" id="ac-mins" class="search" style="margin:0" value="10" min="1" max="10080" inputmode="numeric"></div>
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Gift coins</div><input type="number" id="ac-amount" class="search" style="margin:0" value="1000" min="1" inputmode="numeric"></div>
+        </div>
+        <div class="row" style="flex-wrap:nowrap;align-items:flex-end;margin-top:8px">
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Code valid for</div><input type="number" id="ac-life" class="search" style="margin:0" value="60" min="1" inputmode="numeric"></div>
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Unit</div><select id="ac-unit" class="search" style="margin:0"><option value="1">min</option><option value="60">hours</option><option value="1440">days</option></select></div>
+          <div style="flex:1;min-width:0"><div class="lead" style="margin:0 0 3px;font-size:12px">Max players</div><input type="number" id="ac-max" class="search" style="margin:0" value="0" min="0" inputmode="numeric"></div>
+        </div>
+        <p class="lead" style="margin:6px 0 8px">Boost length is how long the boost lasts after a player redeems it. Gift coins is the amount for a coin gift. Max players 0 means unlimited. Every player can use a code once.</p>
+        <button type="button" class="btn primary" id="admin-make">Create code</button>
+        <textarea id="admin-token" readonly placeholder="Your new code will appear here."></textarea>
+        <button type="button" class="btn sm" id="admin-copy">Copy code</button>
+        <p class="msg" id="admin-cmsg" role="status"></p>
+        <p class="lead" style="margin:12px 0 4px"><b>Your codes</b></p>
+        <button type="button" class="btn sm" id="admin-codes-refresh">Refresh list</button>
+        <div class="list" id="admin-codes"></div>
+        <p class="lead" style="margin:10px 0 0">Admins can use up to 10x for events, 25x for codes and 24 hours. The owner panel has no such limits. Codes are checked by the server; the public key still lets anyone try codes, so use short lifetimes and a max-players limit for valuable ones.</p>
+      </div>
+      <div id="admin-players" hidden>
+        <p class="lead">Owner tools. Needs the owner code in the field on the Global tab.</p>
+        <p class="lead" style="margin:14px 0 4px"><b>Player</b></p>
+        <input type="text" id="ow-name" class="search" placeholder="Player name" maxlength="16" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <select id="ow-pick" class="search"></select>
+        <p class="lead" style="margin:14px 0 4px"><b>Rank</b></p>
+        <div class="row" style="flex-wrap:nowrap"><select id="ow-rank" class="search" style="margin:0"><option value="member">Member</option><option value="vip">VIP</option><option value="admin">Admin</option><option value="owner">Owner</option></select><button type="button" class="btn" id="ow-rank-btn">Give rank</button></div>
+        <p class="lead" style="margin:14px 0 4px"><b>Reset</b></p>
+        <div class="row"><button type="button" class="btn danger" id="ow-reset">Reset progress</button><button type="button" class="btn danger" id="ow-delete">Delete account</button></div>
+        <p class="lead" style="margin:6px 0 0">Reset progress: the player starts over and keeps the name and password (applied within a minute while they are online). Delete account: removes the account, leaderboard row and rank, and frees the name.</p>
+        <p class="msg" id="ow-msg" role="status"></p>
+        <p class="lead" style="margin:14px 0 4px"><b>Players with a rank</b></p>
+        <div class="list" id="ow-ranks"></div>
+      </div>
+      <button type="button" class="btn sm" id="admin-hide" style="margin-top:12px">Hide panel</button>
+    </div>
+    <div class="panel">
+      <h3>Duplicate system</h3>
+      <span class="badge-on" id="dup-status">PERMANENTLY ENABLED</span>
+      <p class="lead" style="margin:10px 0 0">Every hunt can return any username, including ones you already own. Duplicates cannot be turned off.</p>
+    </div>
+    <div class="panel">
+      <h3>Drop rates</h3>
+      <table class="odds"><thead><tr><th>Rarity</th><th>Usernames</th><th>Chance</th></tr></thead><tbody id="odds-list"></tbody></table>
+      <p class="lead" id="odds-note" style="margin:10px 0 0">A rarity is rolled first using these chances, then one username of that rarity is chosen evenly.</p>
+    </div>
+    <div class="panel" id="cloud-panel">
+      <h3>Account (log in without email)</h3>
+      <p class="lead">Your progress is saved online under your player name. Log in on any device with your player name and your password. A player name can only be registered once.</p>
+      <p class="msg" id="cloud-status" role="status"></p>
+      <div id="cloud-open"><button type="button" class="btn primary" id="cloud-open-btn">Log in / set password</button></div>
+      <div id="cloud-active" hidden>
+        <div class="row">
+          <button type="button" class="btn" id="cloud-sync-btn">Save now</button>
+          <button type="button" class="btn danger" id="cloud-logout-btn">Log out</button>
+        </div>
+        <h3 style="margin-top:14px;font-size:15px">Change password</h3>
+        <input type="password" id="cloud-old" class="search" placeholder="Current password" maxlength="40" autocomplete="off">
+        <input type="password" id="cloud-new" class="search" placeholder="New password (6 to 40 characters)" maxlength="40" autocomplete="off">
+        <input type="password" id="cloud-new2" class="search" placeholder="New password again" maxlength="40" autocomplete="off">
+        <button type="button" class="btn" id="cloud-change">Change password</button>
+      </div>
+      <p class="msg" id="cloud-msg" role="status"></p>
+    </div>
+    <div class="panel" id="local-db-panel">
+      <h3>Local player database</h3>
+      <p class="lead">This device keeps a small database of every registered player it has seen: you, friends from lobby score cards, and players loaded from the global board. It powers the leaderboard even offline.</p>
+      <p class="msg ok" id="localdb-info"></p>
+      <div class="row">
+        <button type="button" class="btn danger" id="localdb-clear">Clear database</button>
+      </div>
+    </div>
+    <div class="panel" id="global-panel">
+      <h3>Online leaderboard (Supabase)</h3>
+      <p class="lead">Players who register a name appear on one worldwide leaderboard, and your stats upload automatically after every hunt. It needs an internet connection; the game keeps working offline.</p>
+      <p class="msg" id="global-msg" role="status"></p>
+      <div class="row">
+        <button type="button" class="btn" id="global-toggle">Turn off</button>
+        <button type="button" class="btn" id="global-retry">Refresh now</button>
+      </div>
+      <details style="margin-top:8px">
+        <summary style="cursor:pointer;font-weight:700;font-size:14px">One-time database setup (for whoever runs the game)</summary>
+        <p class="lead" style="margin:8px 0">Open your Supabase project, go to SQL Editor, paste this and press Run (safe to run again after updates):</p>
+        <textarea readonly style="min-height:170px">-- Username Hunter: database setup for Supabase
+-- Leaderboard, accounts (name + password), ranks, owner tools, codes and global events.
+-- Run this once: Supabase dashboard > SQL Editor > New query > paste > Run.
+-- It is safe to run again after updates.
+
+create extension if not exists pgcrypto with schema extensions;
+
+-- =========================================================
+-- 1) Leaderboard
+-- =========================================================
+create table if not exists public.players (
+  pid        text primary key check (pid ~ '^[A-Za-z0-9]{6,12}$'),
+  pname      text not null check (pname ~ '^[A-Za-z0-9_]{3,16}$'),
+  name       text not null check (char_length(name) between 1 and 16),
+  rolls      integer not null default 0 check (rolls between 0 and 1000000000),
+  coins      integer not null default 0 check (coins between 0 and 1000000000),
+  uniq       integer not null default 1 check (uniq between 1 and 1000),
+  best       text check (best is null or char_length(best) between 1 and 16),
+  updated_at timestamptz not null default now()
+);
+
+-- no duplicate player names: case-insensitive, and "Der_Loki" counts the same as "DerLoki"
+create or replace function public.norm_name(t text) returns text
+language sql immutable as $$ select lower(replace(t, '_', '')) $$;
+
+create unique index if not exists players_pname_lower_key on public.players (lower(pname));
+do $$ begin
+  create unique index if not exists players_pname_norm_key on public.players (public.norm_name(pname));
+exception when unique_violation then
+  raise notice 'players_pname_norm_key not created: two existing names only differ by "_". New names are still checked by the functions below.';
+end $$;
+
+alter table public.players enable row level security;
+drop policy if exists "players read" on public.players;
+drop policy if exists "players insert" on public.players;
+drop policy if exists "players update" on public.players;
+create policy "players read"   on public.players for select to anon using (true);
+create policy "players insert" on public.players for insert to anon with check (true);
+create policy "players update" on public.players for update to anon using (true) with check (true);
+
+grant usage on schema public to anon;
+grant select, insert, update on public.players to anon;
+
+-- =========================================================
+-- 2) Accounts (player name + password, no email) and ranks
+--    "saves" is private: nobody can read it directly. The game only uses
+--    the functions below, which check the password.
+-- =========================================================
+create table if not exists public.saves (
+  pid        text primary key check (pid ~ '^[A-Za-z0-9]{6,12}$'),
+  pname      text not null check (pname ~ '^[A-Za-z0-9_]{3,16}$'),
+  code_hash  text not null,
+  data       jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table public.saves add column if not exists reset_flag boolean not null default false;
+create unique index if not exists saves_pname_lower_key on public.saves (lower(pname));
+do $$ begin
+  create unique index if not exists saves_pname_norm_key on public.saves (public.norm_name(pname));
+exception when unique_violation then
+  raise notice 'saves_pname_norm_key not created: two existing names only differ by "_".';
+end $$;
+alter table public.saves enable row level security;
+revoke all on public.saves from anon, authenticated;
+
+-- Ranks: everyone is a Member by default (no row). Only the owner functions can change ranks.
+create table if not exists public.ranks (
+  pid        text primary key check (pid ~ '^[A-Za-z0-9]{6,12}$'),
+  pname      text not null,
+  rank       text not null check (rank in ('vip', 'admin', 'owner')),
+  updated_at timestamptz not null default now()
+);
+alter table public.ranks enable row level security;
+drop policy if exists "ranks read" on public.ranks;
+create policy "ranks read" on public.ranks for select to anon using (true);
+revoke all on public.ranks from anon, authenticated;
+grant select on public.ranks to anon;
+
+-- Which role does this secret code belong to? 'owner' | 'admin' | null. The codes are stored only as bcrypt hashes.
+create or replace function public.role_of(p_secret text)
+returns text
+language sql
+security definer
+set search_path = public, extensions
+as $$
+  select case
+    when p_secret is null then null
+    when coalesce(crypt(p_secret, '$2a$10$ZF7IyqdHzGAI/up8PcSZJeYwJ7MiLqU6TA79ooFQkllKJki1.jDEi') = '$2a$10$ZF7IyqdHzGAI/up8PcSZJeYwJ7MiLqU6TA79ooFQkllKJki1.jDEi', false) then 'owner'
+    when coalesce(crypt(p_secret, '$2a$10$5AdayBbbZT6Ee2bmgBN6iOUvdemeEPfb8xieWIctE5B.smGUfPLFW') = '$2a$10$5AdayBbbZT6Ee2bmgBN6iOUvdemeEPfb8xieWIctE5B.smGUfPLFW', false) then 'admin'
+    else null
+  end;
+$$;
+
+create or replace function public.name_busy(p_pname text, p_pid text)
+returns boolean
+language sql
+security definer
+set search_path = public, extensions
+as $$
+  select exists (select 1 from public.players where public.norm_name(pname) = public.norm_name(p_pname) and pid &lt;> p_pid)
+      or exists (select 1 from public.saves   where public.norm_name(pname) = public.norm_name(p_pname) and pid &lt;> p_pid);
+$$;
+
+-- Create a new account. Returns: ok | taken | bad_name | bad_code | too_big
+create or replace function public.save_register(p_pname text, p_pid text, p_code text, p_data jsonb)
+returns text
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  if p_pname is null or p_pname !~ '^[A-Za-z0-9_]{3,16}$' then return 'bad_name'; end if;
+  if p_pid is null or p_pid !~ '^[A-Za-z0-9]{6,12}$' then return 'bad_name'; end if;
+  if p_code is null or char_length(p_code) not between 6 and 40 then return 'bad_code'; end if;
+  if p_data is null or pg_column_size(p_data) > 200000 then return 'too_big'; end if;
+  if public.name_busy(p_pname, p_pid) then return 'taken'; end if;
+  begin
+    insert into public.saves (pid, pname, code_hash, data)
+    values (p_pid, p_pname, crypt(p_code, gen_salt('bf')), p_data);
+  exception when unique_violation then
+    return 'taken';
+  end;
+  return 'ok';
+end;
+$$;
+
+-- Set a new password.
+--  * account exists: needs the OLD password (p_old)
+--  * no account yet for this name: creates it (the name must not belong to someone else)
+-- Returns: ok | taken | bad_login | bad_name | bad_code | too_big
+create or replace function public.save_claim(p_pname text, p_pid text, p_new text, p_old text, p_data jsonb)
+returns text
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare r public.saves%rowtype;
+begin
+  if p_pname is null or p_pname !~ '^[A-Za-z0-9_]{3,16}$' then return 'bad_name'; end if;
+  if p_pid is null or p_pid !~ '^[A-Za-z0-9]{6,12}$' then return 'bad_name'; end if;
+  if p_new is null or char_length(p_new) not between 6 and 40 then return 'bad_code'; end if;
+  if p_data is null or pg_column_size(p_data) > 200000 then return 'too_big'; end if;
+  select * into r from public.saves where lower(pname) = lower(p_pname);
+  if found then
+    if p_old is null or not coalesce(r.code_hash = crypt(p_old, r.code_hash), false) then return 'bad_login'; end if;
+    update public.saves
+       set code_hash = crypt(p_new, gen_salt('bf')),
+           data = case when r.reset_flag then r.data else p_data end,
+           updated_at = now()
+     where pid = r.pid;
+    return 'ok';
+  end if;
+  if public.name_busy(p_pname, p_pid) then return 'taken'; end if;
+  begin
+    insert into public.saves (pid, pname, code_hash, data)
+    values (p_pid, p_pname, crypt(p_new, gen_salt('bf')), p_data);
+  exception when unique_violation then
+    return 'taken';
+  end;
+  return 'ok';
+end;
+$$;
+
+-- Saves new progress. Returns: ok | bad_login | too_big | reset (the owner reset this player: start over)
+create or replace function public.save_update(p_pname text, p_code text, p_data jsonb)
+returns text
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare r public.saves%rowtype;
+begin
+  if p_pname is null or p_code is null or char_length(p_code) not between 6 and 40 then return 'bad_login'; end if;
+  if p_data is null or pg_column_size(p_data) > 200000 then return 'too_big'; end if;
+  select * into r from public.saves where lower(pname) = lower(p_pname);
+  if not found or not coalesce(r.code_hash = crypt(p_code, r.code_hash), false) then
+    return 'bad_login';
+  end if;
+  if r.reset_flag then return 'reset'; end if;
+  update public.saves set data = p_data, updated_at = now() where pid = r.pid;
+  return 'ok';
+end;
+$$;
+
+-- Log in: returns {pname, data, rank, reset} or null when name/password do not match
+create or replace function public.save_load(p_pname text, p_code text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare r public.saves%rowtype;
+begin
+  if p_pname is null or p_code is null or char_length(p_code) not between 6 and 40 then return null; end if;
+  select * into r from public.saves where lower(pname) = lower(p_pname);
+  if not found or not coalesce(r.code_hash = crypt(p_code, r.code_hash), false) then
+    return null;
+  end if;
+  return jsonb_build_object('pname', r.pname, 'data', r.data, 'reset', r.reset_flag,
+                            'rank', coalesce((select k.rank from public.ranks k where k.pid = r.pid), 'member'));
+end;
+$$;
+
+-- Rank and pending reset for a logged-in player, or null when name/password do not match
+create or replace function public.save_status(p_pname text, p_code text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare r public.saves%rowtype;
+begin
+  if p_pname is null or p_code is null or char_length(p_code) not between 6 and 40 then return null; end if;
+  select * into r from public.saves where lower(pname) = lower(p_pname);
+  if not found or not coalesce(r.code_hash = crypt(p_code, r.code_hash), false) then
+    return null;
+  end if;
+  return jsonb_build_object('reset', r.reset_flag,
+                            'rank', coalesce((select k.rank from public.ranks k where k.pid = r.pid), 'member'));
+end;
+$$;
+
+-- The game confirms it applied a reset and stores the fresh progress. Returns: ok | bad_login
+create or replace function public.save_ack_reset(p_pname text, p_code text, p_data jsonb)
+returns text
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare r public.saves%rowtype;
+begin
+  if p_pname is null or p_code is null or char_length(p_code) not between 6 and 40 then return 'bad_login'; end if;
+  if p_data is null or pg_column_size(p_data) > 200000 then return 'bad_login'; end if;
+  select * into r from public.saves where lower(pname) = lower(p_pname);
+  if not found or not coalesce(r.code_hash = crypt(p_code, r.code_hash), false) then return 'bad_login'; end if;
+  update public.saves set data = p_data, reset_flag = false, updated_at = now() where pid = r.pid;
+  return 'ok';
+end;
+$$;
+
+-- Is this player name still free for this player?
+create or replace function public.name_free(p_pname text, p_pid text)
+returns boolean
+language sql
+security definer
+set search_path = public, extensions
+as $$
+  select not public.name_busy(p_pname, p_pid);
+$$;
+
+-- A leaderboard row may not use a name that belongs to someone else's account
+create or replace function public.players_guard()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  if exists (select 1 from public.saves where public.norm_name(pname) = public.norm_name(new.pname) and pid &lt;> new.pid) then
+    raise exception 'player name is reserved' using errcode = '23505';
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists players_guard on public.players;
+create trigger players_guard before insert or update on public.players
+  for each row execute function public.players_guard();
+
+-- =========================================================
+-- 3) Owner tools: ranks and resets (owner code only)
+-- =========================================================
+-- Give a rank (member | vip | admin | owner). Returns: ok | forbidden | no_player | bad_input
+create or replace function public.rank_set(p_admin text, p_pname text, p_rank text)
+returns text
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare v_pid text; v_name text;
+begin
+  if public.role_of(p_admin) is distinct from 'owner' then return 'forbidden'; end if;
+  if p_rank is null or p_rank not in ('member', 'vip', 'admin', 'owner') then return 'bad_input'; end if;
+  select pid, pname into v_pid, v_name from public.saves where lower(pname) = lower(coalesce(p_pname, ''));
+  if v_pid is null then
+    select pid, pname into v_pid, v_name from public.players where lower(pname) = lower(coalesce(p_pname, ''));
+  end if;
+  if v_pid is null then return 'no_player'; end if;
+  if p_rank = 'member' then
+    delete from public.ranks where pid = v_pid;
+  else
+    insert into public.ranks (pid, pname, rank) values (v_pid, v_name, p_rank)
+    on conflict (pid) do update set rank = excluded.rank, pname = excluded.pname, updated_at = now();
+  end if;
+  return 'ok';
+end;
+$$;
+
+-- Reset a player. p_mode = 'progress' (the player starts over, keeps name and password)
+-- or 'delete' (account, leaderboard row and rank are removed and the name is free again).
+-- Returns: ok | forbidden | no_player | bad_input
+create or replace function public.owner_reset_player(p_admin text, p_pname text, p_mode text)
+returns text
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare a int := 0; b int := 0; n text := lower(coalesce(p_pname, ''));
+begin
+  if public.role_of(p_admin) is distinct from 'owner' then return 'forbidden'; end if;
+  if p_mode is null or p_mode not in ('progress', 'delete') then return 'bad_input'; end if;
+  if p_mode = 'progress' then
+    update public.saves set reset_flag = true, updated_at = now() where lower(pname) = n;
+    get diagnostics a = row_count;
+    update public.players set rolls = 0, coins = 0, uniq = 1, best = null, name = 'Youre_Username', updated_at = now() where lower(pname) = n;
+    get diagnostics b = row_count;
+  else
+    delete from public.ranks where lower(pname) = n;
+    delete from public.saves where lower(pname) = n;
+    get diagnostics a = row_count;
+    delete from public.players where lower(pname) = n;
+    get diagnostics b = row_count;
+  end if;
+  if a + b = 0 then return 'no_player'; end if;
+  return 'ok';
+end;
+$$;
+
+-- =========================================================
+-- 4) Codes and global events (admin or owner code)
+--    Admin limits: codes up to 25x, 24 h boost, 30 days valid, 100000 gift coins;
+--    events up to 10x and 24 h. The owner has no such limits (up to 100x, 7 days).
+-- =========================================================
+create table if not exists public.codes (
+  code       text primary key check (code ~ '^[A-Z0-9]{4,20}$'),
+  kind       text not null check (kind in ('luck', 'coins', 'gift')),
+  mult       integer not null default 2 check (mult between 1 and 100),
+  mins       integer not null default 10 check (mins between 0 and 10080),
+  amount     integer not null default 0 check (amount between 0 and 1000000000),
+  expires_at timestamptz not null,
+  max_uses   integer not null default 0 check (max_uses between 0 and 1000000),
+  uses       integer not null default 0,
+  created_at timestamptz not null default now()
+);
+create table if not exists public.code_uses (
+  code text not null references public.codes (code) on delete cascade,
+  pid  text not null check (pid ~ '^[A-Za-z0-9]{6,12}$'),
+  primary key (code, pid)
+);
+create table if not exists public.app_config (
+  key        text primary key,
+  value      jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table public.codes enable row level security;
+alter table public.code_uses enable row level security;
+alter table public.app_config enable row level security;
+revoke all on public.codes, public.code_uses, public.app_config from anon, authenticated;
+
+-- Returns: ok | forbidden | owner_only | bad_input | exists
+create or replace function public.code_create(p_admin text, p_code text, p_kind text, p_mult integer, p_mins integer, p_amount integer, p_expire_mins integer, p_max_uses integer)
+returns text
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare v_role text := public.role_of(p_admin);
+begin
+  if v_role is null then return 'forbidden'; end if;
+  p_code := upper(coalesce(p_code, ''));
+  if p_code !~ '^[A-Z0-9]{4,20}$' or p_kind not in ('luck', 'coins', 'gift')
+     or p_mult is null or p_mult not between 1 and 100
+     or p_mins is null or p_mins not between 0 and 10080
+     or p_amount is null or p_amount not between 0 and 1000000000
+     or p_expire_mins is null or p_expire_mins not between 1 and 525600
+     or p_max_uses is null or p_max_uses not between 0 and 1000000 then
+    return 'bad_input';
+  end if;
+  if v_role = 'admin' and (p_mult > 25 or p_mins > 1440 or p_amount > 100000 or p_expire_mins > 43200) then
+    return 'owner_only';
+  end if;
+  begin
+    insert into public.codes (code, kind, mult, mins, amount, expires_at, max_uses)
+    values (p_code, p_kind, p_mult, p_mins, p_amount, now() + make_interval(mins => p_expire_mins), p_max_uses);
+  exception when unique_violation then
+    return 'exists';
+  end;
+  return 'ok';
+end;
+$$;
+
+-- Redeem a code (anyone). Returns {status, kind, mult, mins, amount}; status = ok | invalid | expired | used | maxed
+create or replace function public.code_redeem(p_code text, p_pid text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare r public.codes%rowtype;
+begin
+  p_code := upper(coalesce(p_code, ''));
+  if p_code !~ '^[A-Z0-9]{4,20}$' or p_pid is null or p_pid !~ '^[A-Za-z0-9]{6,12}$' then
+    return jsonb_build_object('status', 'invalid');
+  end if;
+  select * into r from public.codes where code = p_code for update;
+  if not found then return jsonb_build_object('status', 'invalid'); end if;
+  if now() > r.expires_at then return jsonb_build_object('status', 'expired'); end if;
+  if exists (select 1 from public.code_uses where code = p_code and pid = p_pid) then
+    return jsonb_build_object('status', 'used');
+  end if;
+  if r.max_uses > 0 and r.uses >= r.max_uses then return jsonb_build_object('status', 'maxed'); end if;
+  insert into public.code_uses (code, pid) values (p_code, p_pid);
+  update public.codes set uses = uses + 1 where code = p_code;
+  return jsonb_build_object('status', 'ok', 'kind', r.kind, 'mult', r.mult, 'mins', r.mins, 'amount', r.amount);
+end;
+$$;
+
+-- List codes. Returns a JSON array, or null when the code is wrong.
+create or replace function public.code_list(p_admin text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  if public.role_of(p_admin) is null then return null; end if;
+  return coalesce((
+    select jsonb_agg(jsonb_build_object('code', code, 'kind', kind, 'mult', mult, 'mins', mins, 'amount', amount,
+             'left_min', greatest(0, ceil(extract(epoch from (expires_at - now())) / 60)::int), 'max_uses', max_uses, 'uses', uses)
+           order by created_at desc)
+    from (select * from public.codes order by created_at desc limit 50) c
+  ), '[]'::jsonb);
+end;
+$$;
+
+create or replace function public.code_delete(p_admin text, p_code text)
+returns text
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  if public.role_of(p_admin) is null then return 'forbidden'; end if;
+  delete from public.codes where code = upper(coalesce(p_code, ''));
+  return 'ok';
+end;
+$$;
+
+-- Global event for every player: luck multiplier and/or coin multiplier for p_mins minutes (0 ends it).
+-- Returns: ok | forbidden | owner_only | bad_input
+create or replace function public.event_set(p_admin text, p_mult integer, p_cmult integer, p_mins integer)
+returns text
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare v_role text := public.role_of(p_admin);
+begin
+  if v_role is null then return 'forbidden'; end if;
+  if p_mult is null or p_mult not between 1 and 100 or p_cmult is null or p_cmult not between 1 and 100
+     or p_mins is null or p_mins not between 0 and 10080 then return 'bad_input'; end if;
+  if p_mins > 0 and p_mult = 1 and p_cmult = 1 then return 'bad_input'; end if;
+  if v_role = 'admin' and (p_mult > 10 or p_cmult > 10 or p_mins > 1440) then return 'owner_only'; end if;
+  insert into public.app_config (key, value, updated_at)
+  values ('event', jsonb_build_object('mult', p_mult, 'cmult', p_cmult, 'until', (now() + make_interval(mins => p_mins))::text), now())
+  on conflict (key) do update set value = excluded.value, updated_at = now();
+  return 'ok';
+end;
+$$;
+
+-- Current global event (anyone): {mult, cmult, left_ms}
+create or replace function public.event_get()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare v jsonb; ms bigint;
+begin
+  select value into v from public.app_config where key = 'event';
+  if v is null then return jsonb_build_object('mult', 1, 'cmult', 1, 'left_ms', 0); end if;
+  ms := greatest(0, floor(extract(epoch from ((v ->> 'until')::timestamptz - now())) * 1000))::bigint;
+  return jsonb_build_object('mult', case when ms > 0 then (v ->> 'mult')::int else 1 end,
+                            'cmult', case when ms > 0 then coalesce((v ->> 'cmult')::int, 1) else 1 end,
+                            'left_ms', ms);
+end;
+$$;
+
+-- old versions from earlier setups
+drop function if exists public.event_set(text, integer, integer);
+drop function if exists public.admin_ok(text);
+
+-- =========================================================
+-- 5) Who may call what
+-- =========================================================
+revoke all on function public.norm_name(text) from public;
+revoke all on function public.role_of(text) from public;
+revoke all on function public.name_busy(text, text) from public;
+revoke all on function public.save_register(text, text, text, jsonb) from public;
+revoke all on function public.save_claim(text, text, text, text, jsonb) from public;
+revoke all on function public.save_update(text, text, jsonb) from public;
+revoke all on function public.save_load(text, text) from public;
+revoke all on function public.save_status(text, text) from public;
+revoke all on function public.save_ack_reset(text, text, jsonb) from public;
+revoke all on function public.name_free(text, text) from public;
+revoke all on function public.rank_set(text, text, text) from public;
+revoke all on function public.owner_reset_player(text, text, text) from public;
+revoke all on function public.code_create(text, text, text, integer, integer, integer, integer, integer) from public;
+revoke all on function public.code_redeem(text, text) from public;
+revoke all on function public.code_list(text) from public;
+revoke all on function public.code_delete(text, text) from public;
+revoke all on function public.event_set(text, integer, integer, integer) from public;
+revoke all on function public.event_get() from public;
+grant execute on function public.norm_name(text) to anon;
+grant execute on function public.save_register(text, text, text, jsonb) to anon;
+grant execute on function public.save_claim(text, text, text, text, jsonb) to anon;
+grant execute on function public.save_update(text, text, jsonb) to anon;
+grant execute on function public.save_load(text, text) to anon;
+grant execute on function public.save_status(text, text) to anon;
+grant execute on function public.save_ack_reset(text, text, jsonb) to anon;
+grant execute on function public.name_free(text, text) to anon;
+grant execute on function public.rank_set(text, text, text) to anon;
+grant execute on function public.owner_reset_player(text, text, text) to anon;
+grant execute on function public.code_create(text, text, text, integer, integer, integer, integer, integer) to anon;
+grant execute on function public.code_redeem(text, text) to anon;
+grant execute on function public.code_list(text) to anon;
+grant execute on function public.code_delete(text, text) to anon;
+grant execute on function public.event_set(text, integer, integer, integer) to anon;
+grant execute on function public.event_get() to anon;
+</textarea>
+        <p class="lead" style="margin:0">The public key in this game can only do what these policies allow: read, add and update player rows. Anyone could post fake scores or change another player's row, so it suits friends and communities, not contests with prizes. Never put a secret (service_role) key into this file.</p>
+      </details>
+    </div>
+    <div class="panel">
+      <h3>Export save</h3>
+      <div class="row">
+        <button type="button" class="btn" id="export-btn">Export Save</button>
+        <button type="button" class="btn" id="copy-btn">Copy</button>
+      </div>
+      <textarea id="export-box" readonly placeholder="Press Export Save to show your save code here."></textarea>
+    </div>
+    <div class="panel">
+      <h3>Import save</h3>
+      <textarea id="import-box" placeholder="Paste a save code here, then press Import Save."></textarea>
+      <button type="button" class="btn" id="import-btn">Import Save</button>
+      <p class="msg" id="import-msg" role="status"></p>
+    </div>
+    <div class="panel">
+      <h3>How progress is stored</h3>
+      <p class="lead" style="margin:0">Progress is saved automatically in your browser's localStorage after every hunt. Different browsers, and sometimes different preview modes (for example an editor's preview versus Chrome), keep separate storage, so use Export and Import to move a save between them.</p>
+      <p class="msg" id="storage-status"></p>
+    </div>
+    <div class="panel">
+      <h3>Reset progress</h3>
+      <p class="lead">Deletes your collection, coins, skills, stats, history, redeemed codes and lobby. You keep the starter username.</p>
+      <button type="button" class="btn danger" id="reset-btn">Reset Progress</button>
+    </div>
+  </section>
+
+  <section id="screen-ranks" class="screen" aria-label="Leaderboard">
+    <h2 class="h">Leaderboard</h2>
+    <div class="chips" id="ranks-source">
+      <button type="button" class="chip on" id="src-global" style="--c:#fbbf24">Global</button>
+      <button type="button" class="chip" id="src-lobby" style="--c:#fbbf24">Lobby</button>
+      <button type="button" class="btn sm" id="ranks-refresh" style="margin:0 0 0 auto;flex:0 0 auto">Refresh</button>
+    </div>
+    <p class="lead" id="ranks-note"></p>
+    <div class="chips" id="ranks-chips"></div>
+    <div class="list" id="ranks-list"></div>
+  </section>
+
+  <section id="screen-shop" class="screen" aria-label="Shop">
+    <h2 class="h">Shop</h2>
+    <p class="lead">Spend your coins on boosts. You have <b id="shop-coins" style="color:var(--gold)">0</b> coins. Buying the same luck boost again adds time (up to 60 minutes); a weaker luck boost cannot replace a stronger one.</p>
+    <p class="msg" id="shop-msg" role="status"></p>
+    <div class="list" id="shop-list"></div>
+    <div class="panel"><h3>Active boosts</h3><p class="lead" id="shop-active" style="margin:0">No active boosts.</p></div>
+  </section>
+
+  <section id="screen-skills" class="screen" aria-label="Skill tree">
+    <h2 class="h">Skill Tree</h2>
+    <p class="lead">Spend coins on permanent upgrades. Skills stay forever and are saved with your account. You have <b id="sk-coins" style="color:var(--gold)">0</b> coins.</p>
+    <p class="msg" id="sk-msg" role="status"></p>
+    <div class="panel"><h3>Your bonuses</h3><p class="lead" id="sk-sum" style="margin:0"></p></div>
+    <div id="sk-tree"></div>
+  </section>
+
+  <section id="screen-lobby" class="screen" aria-label="Lobby">
+    <h2 class="h">Lobby</h2>
+    <p class="lead">Lobbies work without any server: they run through a shared lobby code and score cards that you and your friends send each other (for example in a chat). For a worldwide ranking, use the Global tab on the Ranks screen.</p>
+    <div id="lobby-none">
+      <div class="panel">
+        <h3>Create a lobby</h3>
+        <input type="text" id="lobby-name" class="search" placeholder="Lobby name (optional)" maxlength="24" autocomplete="off">
+        <button type="button" class="btn primary" id="lobby-create" style="font-size:15px;padding:12px 28px;letter-spacing:.08em">Create Lobby</button>
+      </div>
+      <div class="panel">
+        <h3>Join a lobby</h3>
+        <input type="text" id="lobby-code" class="search" placeholder="LB-ABC123" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <button type="button" class="btn" id="lobby-join">Join Lobby</button>
+      </div>
+      <p class="msg" id="lobby-msg" role="status"></p>
+    </div>
+    <div id="lobby-current" hidden>
+      <div class="panel">
+        <h3 id="lobby-title"></h3>
+        <div class="row" style="align-items:center;margin-top:6px">
+          <b class="code" id="lobby-code-show"></b>
+          <button type="button" class="btn sm" id="lobby-copy-code">Copy code</button>
+        </div>
+        <p class="lead" style="margin:10px 0">Give this code to friends so they can join the same lobby.</p>
+        <button type="button" class="btn danger sm" id="lobby-leave">Leave Lobby</button>
+      </div>
+      <div class="panel">
+        <h3>Your score card</h3>
+        <p class="lead">Create your card and send it to the others in your lobby. Make a fresh one whenever your stats change.</p>
+        <div class="row">
+          <button type="button" class="btn" id="card-export">Create My Card</button>
+          <button type="button" class="btn" id="card-copy">Copy</button>
+        </div>
+        <textarea id="card-box" readonly placeholder="Your score card will appear here."></textarea>
+      </div>
+      <div class="panel">
+        <h3>Add a friend's card</h3>
+        <textarea id="card-import" placeholder="Paste a friend's score card here."></textarea>
+        <button type="button" class="btn" id="card-add">Add to Lobby</button>
+        <p class="msg" id="card-msg" role="status"></p>
+      </div>
+      <div class="panel">
+        <h3>Members</h3>
+        <div class="list" id="lobby-members"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav class="nav" aria-label="Main navigation">
+  <button type="button" data-nav="home" class="on"><span>&#8962;</span>Home</button>
+  <button type="button" data-nav="hunt"><span>&#9673;</span>Hunt</button>
+  <button type="button" data-nav="collection"><span>&#9638;</span>Collect</button>
+  <button type="button" data-nav="index"><span>&#9776;</span>Index</button>
+  <button type="button" data-nav="ranks"><span>&#9819;</span>Ranks</button>
+  <button type="button" data-nav="lobby"><span>&#9823;</span>Lobby</button>
+  <button type="button" data-nav="shop"><span>&#9830;</span>Shop</button>
+  <button type="button" data-nav="skills"><span>&#10022;</span>Skills</button>
+  <button type="button" data-nav="settings"><span>&#9881;&#xFE0E;</span>Settings</button>
+</nav>
+
+<div id="reveal" class="reveal" hidden role="dialog" aria-modal="true" aria-label="Hunt result">
+  <div class="rv-bg"></div>
+  <div class="rv-rays" id="rv-rays" hidden></div>
+  <div class="rv-fx" id="rv-fx"></div>
+  <div class="rv-card" id="rv-card">
+    <div class="rv-icon" id="rv-icon"></div>
+    <div class="rv-rarity" id="rv-rarity"></div>
+    <div class="rv-badge" id="rv-badge"></div>
+    <div class="rv-name" id="rv-name"></div>
+    <p class="rv-count" id="rv-count"></p>
+    <p class="rv-count" id="rv-progress"></p>
+    <p class="rv-coins" id="rv-coins"></p>
+    <button type="button" class="btn primary" id="rv-continue" style="font-size:16px;padding:12px 30px;letter-spacing:.12em">CONTINUE</button>
+  </div>
+</div>
+
+<div id="gate" class="modal" hidden role="dialog" aria-modal="true" aria-label="Log in">
+  <div class="box">
+    <h3 id="gate-title">Welcome, hunter!</h3>
+    <p id="gate-text"></p>
+    <div id="gate-new">
+      <input type="text" id="gate-name" class="search" placeholder="Choose your player name" maxlength="16" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <input type="password" id="gate-pw" class="search" placeholder="Choose a password (6 to 40 characters)" maxlength="40" autocomplete="off">
+      <input type="password" id="gate-pw2" class="search" placeholder="Password again" maxlength="40" autocomplete="off">
+      <button type="button" class="btn primary" id="gate-create" style="font-size:15px;padding:12px 24px;letter-spacing:.06em">Create account</button>
+      <button type="button" class="btn sm" id="gate-to-login" style="margin-top:8px">I already have an account</button>
+    </div>
+    <div id="gate-existing" hidden>
+      <input type="password" id="gate-epw" class="search" placeholder="New password (6 to 40 characters)" maxlength="40" autocomplete="off">
+      <input type="password" id="gate-epw2" class="search" placeholder="New password again" maxlength="40" autocomplete="off">
+      <button type="button" class="btn primary" id="gate-secure" style="font-size:15px;padding:12px 24px;letter-spacing:.06em">Save my new password</button>
+      <button type="button" class="btn sm" id="gate-existing-login" style="margin-top:8px">Log in as someone else</button>
+    </div>
+    <div id="gate-login" hidden>
+      <input type="text" id="gate-login-name" class="search" placeholder="Player name" maxlength="16" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <input type="password" id="gate-login-code" class="search" placeholder="Password" maxlength="40" autocomplete="off">
+      <button type="button" class="btn primary" id="gate-login-btn" style="font-size:15px;padding:12px 24px;letter-spacing:.06em">Log in</button>
+      <button type="button" class="btn sm" id="gate-back" style="margin-top:8px">Back</button>
+    </div>
+    <p class="msg" id="gate-msg" role="status"></p>
+    <button type="button" class="btn sm" id="gate-offline" hidden>Play offline for now</button>
+  </div>
+</div>
+
+<div id="confirm" class="modal" hidden role="dialog" aria-modal="true" aria-label="Confirm reset">
+  <div class="box">
+    <h3 id="confirm-title">Reset all progress?</h3>
+    <p id="confirm-text">This cannot be undone.</p>
+    <div class="row">
+      <button type="button" class="btn" id="confirm-cancel">Cancel</button>
+      <button type="button" class="btn danger" id="confirm-ok">Yes, reset</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" hidden role="status"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var KEY = 'usernameHunter.save.v1';
+  var STARTER = 'Youre_Username';
+  var COINS = [5, 15, 40, 100, 300, 800, 2000, 10000]; // coins per find by rarity (duplicates give half)
+  var CODES = { WELCOME: 500, HUNTER: 1000, GOLDRUSH: 2500, USERNAMEHUNTER: 10000 };
+  var ID_RE = /^[A-Za-z0-9]{6,12}$/;
+  var NAME_RE = /^[A-Za-z0-9_]{3,16}$/;
+  var LOBBY_RE = /^LB-[A-Z0-9]{6}$/;
+  var MAX_MEMBERS = 20;
+
+  // w = chance in tenths of a percent; all eight add up to exactly 1000 (100.0%)
+  var RARITIES = [
+    { name: 'Common',       icon: '\u25CF', color: '#a8b3c7', w: 500 },
+    { name: 'Rare',         icon: '\u25C6', color: '#4aa3ff', w: 250 },
+    { name: 'Very Rare',    icon: '\u2726', color: '#2ee6c8', w: 120 },
+    { name: 'Epic',         icon: '\u2756', color: '#b45cff', w: 70 },
+    { name: 'Legendary',    icon: '\u2605', color: '#ffb92e', w: 35 },
+    { name: 'Mythic',       icon: '\u2739', color: '#ff4d6d', w: 15 },
+    { name: 'Ultra Mythic', icon: '\u273A', color: '#ff3df2', w: 8 },
+    { name: 'God',          icon: '\u265B', color: '#ffe066', w: 2 }
+  ];
+  var NAMES = [
+  [
+    STARTER, 'CloudRunner', 'PixelKnight', 'StarVoyager', 'ShadowFox', 'GoldenRiver', 'SilentComet', 'NovaPlayer',
+    'FrostWalker', 'MoonHunter', 'BrightFalcon', 'SilverQuest', 'CrimsonLeaf', 'DreamChaser', 'StormPilot',
+    'EchoLegend', 'SwiftOtter', 'AmberOtter', 'CalmOtter', 'WittyOtter', 'MistyPebble', 'BravePebble', 'WildPebble',
+    'LuckyBreeze', 'TinyBreeze', 'SunnyBreeze', 'RustyLantern', 'DustyLantern', 'MellowLantern', 'QuietMeadow',
+    'CozyMeadow', 'JollyMeadow', 'SwiftBadger', 'AmberBadger', 'CalmBadger', 'WittyBadger', 'MistyCricket',
+    'BraveCricket', 'WildCricket', 'LuckyHarbor', 'TinyHarbor', 'SunnyHarbor', 'RustyMaple', 'DustyMaple',
+    'MellowMaple', 'QuietWalnut', 'CozyWalnut', 'JollyWalnut', 'SwiftSparrow', 'AmberSparrow', 'CalmSparrow',
+    'WittySparrow', 'MistyBiscuit', 'BraveBiscuit', 'WildBiscuit', 'LuckyOtter', 'TinyOtter', 'SunnyOtter',
+    'RustyPebble', 'DustyPebble', 'MellowPebble', 'QuietBreeze', 'CozyBreeze', 'JollyBreeze', 'SwiftLantern',
+    'LazyPanda', 'HappyPenguin', 'SleepyOwl', 'PaperKite', 'CopperCoin', 'FuzzyMitten'
+  ],
+  [
+    'RapidTiger', 'CrystalWolf', 'NeonPhantom', 'CosmicFlare', 'MysticRaven', 'TurboNinja', 'LunarGhost',
+    'ArcticBlaze', 'ThunderAce', 'VelvetStorm', 'TurboFalcon', 'LaserFalcon', 'NeonPanther', 'TerraPanther',
+    'FrostViper', 'BlazeViper', 'PixelLynx', 'HyperCobra', 'MagmaCobra', 'CyberRaptor', 'IronRaptor', 'VoltShark',
+    'TurboMantis', 'LaserMantis', 'NeonJaguar', 'TerraJaguar', 'FrostHornet', 'BlazeHornet', 'PixelFalcon',
+    'HyperPanther', 'MagmaPanther', 'CyberViper', 'IronViper', 'VoltLynx', 'TurboCobra', 'LaserCobra', 'NeonRaptor',
+    'TerraRaptor', 'FrostShark', 'BlazeShark', 'PixelMantis', 'HyperJaguar', 'MagmaJaguar', 'CyberHornet',
+    'IronHornet', 'VoltFalcon', 'TurboPanther', 'LaserPanther', 'NeonViper', 'TerraViper', 'FrostLynx', 'BlazeLynx',
+    'PixelCobra', 'HyperRaptor', 'MagmaRaptor', 'CyberShark', 'IceViper', 'SolarHawk', 'NightFalcon', 'ToxicMamba',
+    'CobaltFang', 'RogueWolf'
+  ],
+  [
+    'QuantumFox', 'VoidWalker', 'SolarReign', 'NightCipher', 'OmegaDrift', 'QuantumRaider', 'PlasmaRaider',
+    'ZeroRaider', 'SolarPhantom', 'CipherPhantom', 'AstralVortex', 'PhotonVortex', 'IonVortex', 'LunarSentinel',
+    'OmegaSentinel', 'VoidWarden', 'VectorWarden', 'QuantumSpecter', 'PlasmaSpecter', 'ZeroSpecter', 'SolarOracle',
+    'CipherOracle', 'AstralReaper', 'PhotonReaper', 'IonReaper', 'LunarDrifter', 'OmegaDrifter', 'VoidRaider',
+    'VectorRaider', 'QuantumPhantom', 'PlasmaPhantom', 'ZeroPhantom', 'SolarVortex', 'CipherVortex', 'AstralSentinel',
+    'PhotonSentinel', 'IonSentinel', 'LunarWarden', 'OmegaWarden', 'VoidSpecter', 'VectorSpecter', 'QuantumOracle',
+    'PlasmaOracle', 'ZeroOracle', 'EclipseRider', 'NovaSentry', 'StellarWraith', 'MirageBlade', 'PulseHunter',
+    'OrbitGhost'
+  ],
+  [
+    'PhantomZero', 'DarkMatter', 'HyperNova', 'ZeroGravity', 'DragonFang', 'IronSpecter', 'BlazeWraith', 'FrostTitan',
+    'StormBringer', 'ShadowMonarch', 'CrimsonKing', 'NeonSamurai', 'VoltReaper', 'ArcLight', 'GhostProtocol',
+    'StarForged', 'DoomBringer', 'SkyBreaker', 'RiftWalker', 'SoulReaper', 'EmberLord', 'GlitchKing', 'PrismKnight',
+    'ApexHunter', 'OnyxBlade', 'SolarFlare', 'TitanFall', 'WarpDrive', 'NovaStrike', 'VenomFang', 'TempestX',
+    'CyberWolf', 'GalaxyRider', 'LuckyStrike', 'InfernoKing', 'AbyssWalker', 'ThunderLord', 'RuneBreaker',
+    'StarEater', 'DarkHorizon'
+  ],
+  [
+    'AstraPrime', 'Nightfall', 'Zenith', 'Seraph', 'Eclipse', 'Aurora', 'Valkyrie', 'Titan', 'Phoenix', 'Leviathan',
+    'Oblivion', 'Paragon', 'Solstice', 'Nebula', 'Zephyr', 'Obsidian', 'Archon', 'Helios', 'Chronos', 'Ragnarok',
+    'Valhalla', 'Eternity', 'Excalibur', 'Pantheon', 'Mjolnir', 'Celestia', 'Infinity', 'Hyperion'
+  ],
+  [
+    'Xyro', 'Qyro', 'Nyx', 'Zyro', 'Kyro', 'Vyro', 'Xyra', 'Nyxo', 'Qyra', 'Zyx', 'Vyx', 'Kex', 'Jyx', 'Ryx', 'Zyrn',
+    'Kyrx', 'Vynx', 'Qyrn', 'Nyxx', 'Xyrn'
+  ],
+  [
+    'Vex', 'Zy', 'Ky', 'Xo', 'Qi', 'Zex'
+  ],
+  [
+    'Q', 'X', 'K', 'V', 'Z'
+  ]
+  ];
+  var DB = [], INDEX = {};
+  NAMES.forEach(function (list, ri) {
+    list.forEach(function (n) { DB.push({ name: n, r: ri }); INDEX[n] = ri; });
+  });
+  var TOTAL = DB.length;
+  var HISTORY_MAX = 20;
+  var reduced = false;
+  try { reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+  var HUNT_MS = reduced ? 400 : 900;
+
+  var state = freshState(), pullBase = 0;
+  var storageOK = true;
+  var boost = { until: 0, mult: 2, cuntil: 0, cmult: 2, guarN: 0, guarR: 3, used: [] };
+  var ev = { mult: 1, cmult: 1, until: 0 };
+  var busy = false;
+  // cooldown between hunts: after you close a reveal the hunt buttons wait a few seconds
+  var COOLDOWN_MS = 3000, cdUntil = 0, cdTimer = null;
+  function cdLeft() { return Math.max(0, cdUntil - Date.now()); }
+  function cdTick() {
+    var left = cdLeft(), s = document.querySelectorAll('.sphere'), b = document.querySelectorAll('.btn[data-hunt]'), i;
+    if (left <= 0) {
+      clearInterval(cdTimer); cdTimer = null;
+      if (!busy) { for (i = 0; i < s.length; i++) s[i].disabled = false; for (i = 0; i < b.length; i++) { b[i].disabled = false; b[i].textContent = b[i].getAttribute('data-label'); } }
+      return;
+    }
+    for (i = 0; i < s.length; i++) s[i].disabled = true;
+    for (i = 0; i < b.length; i++) { b[i].disabled = true; b[i].textContent = 'WAIT ' + Math.ceil(left / 1000) + 's'; }
+  }
+  function cdTotal() { return COOLDOWN_MS <= 0 ? 0 : Math.max(1000, COOLDOWN_MS - 200 * skLv('cool')); }
+  function startCooldown() {
+    if (cdTotal() <= 0) return;
+    cdUntil = Date.now() + cdTotal();
+    clearInterval(cdTimer);
+    cdTimer = setInterval(cdTick, 200);
+    cdTick();
+  }
+  var huntTimer = null;
+  var toastTimer = null;
+  var ui = { cq: '', cf: 'all', iq: '', xf: 'all', rc: 'rare', rs: 'lobby' };
+  var gl = { url: '', rows: [], status: 'idle', t: 0, errCode: 0, ranks: {}, rankNames: {} };
+  var cloud = { pname: '', code: '', rank: '', status: 'idle', t: 0, err: '', pulled: false };
+  var reg = {};
+  var pubTimer = null;
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, txt) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (txt != null) e.textContent = txt;
+    return e;
+  }
+  function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+  function has(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
+
+  /* ---------- state & saving ---------- */
+  function newId() {
+    var a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789', s = '';
+    for (var i = 0; i < 8; i++) s += a.charAt(Math.floor(Math.random() * a.length));
+    return s;
+  }
+  function freshState(pid, pname) {
+    var c = {}; c[STARTER] = 1;
+    return { counts: c, hunts: 0, dupes: 0, history: [], coins: 0, best: null, equipped: STARTER, redeemed: [], skills: {}, ts: 0, pid: pid || newId(), pname: pname || null, lobby: null };
+  }
+  function unique() {
+    var n = 0;
+    for (var k in state.counts) { if (has(state.counts, k) && state.counts[k] > 0) n++; }
+    return n;
+  }
+  function isInt(v) { return typeof v === 'number' && isFinite(v) && Math.floor(v) === v && v >= 0 && v <= 1e9; }
+
+  function sanitize(o) {
+    var s = freshState(), p = [];
+    if (!o || typeof o !== 'object' || Array.isArray(o)) return { state: s, problems: ['The save is not a valid object.'] };
+    var c = o.counts;
+    if (!c || typeof c !== 'object' || Array.isArray(c)) {
+      p.push('Missing collection data.');
+    } else {
+      Object.keys(c).forEach(function (k) {
+        if (!has(INDEX, k)) p.push('Unknown username in save.');
+        else if (!isInt(c[k])) p.push('Invalid find count for ' + k + '.');
+        else if (c[k] > 0) s.counts[k] = c[k];
+      });
+    }
+    if (isInt(o.hunts)) s.hunts = o.hunts; else p.push('Invalid total hunts.');
+    if (typeof o.ts === 'number' && isFinite(o.ts) && o.ts >= 0 && o.ts < 1e14) s.ts = Math.floor(o.ts);
+    if (isInt(o.dupes)) s.dupes = o.dupes; else p.push('Invalid duplicate count.');
+    if (isInt(o.hunts) && isInt(o.dupes) && o.dupes > o.hunts) p.push('Duplicates cannot exceed total hunts.');
+    if (o.history !== undefined) {
+      if (!Array.isArray(o.history)) p.push('Invalid history.');
+      else {
+        o.history.forEach(function (h) {
+          if (h && typeof h === 'object' && typeof h.n === 'string' && has(INDEX, h.n) && typeof h.d === 'boolean' && typeof h.t === 'number' && isFinite(h.t) && s.history.length < HISTORY_MAX) {
+            s.history.push({ n: h.n, d: h.d, t: h.t });
+          }
+        });
+      }
+    }
+    if (o.coins !== undefined) { if (isInt(o.coins)) s.coins = o.coins; else p.push('Invalid coins.'); }
+    if (o.best != null) {
+      if (typeof o.best === 'object' && typeof o.best.n === 'string' && has(INDEX, o.best.n)) s.best = { n: o.best.n };
+      else p.push('Invalid rarest roll.');
+    }
+    if (!s.best && s.hunts > 0) {
+      var bi = -1, bn = null;
+      Object.keys(s.counts).forEach(function (k) { if (INDEX[k] > bi) { bi = INDEX[k]; bn = k; } });
+      if (bn) s.best = { n: bn };
+    }
+    if (typeof o.equipped === 'string' && has(INDEX, o.equipped) && s.counts[o.equipped] > 0) s.equipped = o.equipped;
+    if (Array.isArray(o.redeemed)) {
+      o.redeemed.forEach(function (r) { if (typeof r === 'string' && has(CODES, r) && s.redeemed.indexOf(r) < 0) s.redeemed.push(r); });
+    }
+    if (o.skills && typeof o.skills === 'object' && !Array.isArray(o.skills)) SKILLS.forEach(function (sk) { var v = o.skills[sk.id]; if (isInt(v) && v > 0 && v <= sk.max) s.skills[sk.id] = v; });
+    if (typeof o.pid === 'string' && ID_RE.test(o.pid)) s.pid = o.pid;
+    if (o.pname != null) {
+      if (typeof o.pname === 'string' && NAME_RE.test(o.pname)) s.pname = o.pname; else p.push('Invalid player name.');
+    }
+    if (o.lobby != null) {
+      var lb = cleanLobby(o.lobby);
+      if (lb) s.lobby = lb; else p.push('Invalid lobby.');
+    }
+    return { state: s, problems: p };
+  }
+  function cleanCard(c) {
+    if (!c || typeof c !== 'object' || Array.isArray(c)) return null;
+    if (typeof c.pid !== 'string' || !ID_RE.test(c.pid)) return null;
+    if (typeof c.name !== 'string' || !has(INDEX, c.name)) return null;
+    if (!isInt(c.rolls) || !isInt(c.coins) || !isInt(c.uniq) || c.uniq < 1 || c.uniq > TOTAL) return null;
+    var best = null;
+    if (c.best != null) { if (typeof c.best !== 'string' || !has(INDEX, c.best)) return null; best = c.best; }
+    if (typeof c.lobby !== 'string' || !LOBBY_RE.test(c.lobby)) return null;
+    var pn = null;
+    if (c.pname != null) { if (typeof c.pname !== 'string' || !NAME_RE.test(c.pname)) return null; pn = c.pname; }
+    return { pid: c.pid, pname: pn, name: c.name, rolls: c.rolls, coins: c.coins, uniq: c.uniq, best: best, lobby: c.lobby, t: (typeof c.t === 'number' && isFinite(c.t)) ? c.t : 0 };
+  }
+  function cleanLobby(l) {
+    if (!l || typeof l !== 'object' || Array.isArray(l)) return null;
+    if (typeof l.code !== 'string' || !LOBBY_RE.test(l.code)) return null;
+    var name = typeof l.name === 'string' ? l.name.trim().slice(0, 24) : '';
+    if (!name) name = 'Lobby ' + l.code;
+    var mem = [], seen = {};
+    if (Array.isArray(l.members)) {
+      l.members.forEach(function (m) {
+        var cc = cleanCard(m);
+        if (cc && cc.lobby === l.code && !has(seen, cc.pid) && mem.length < MAX_MEMBERS) { seen[cc.pid] = 1; mem.push(cc); }
+      });
+    }
+    return { code: l.code, name: name, members: mem };
+  }
+  function serialize() {
+    return { game: 'UsernameHunter', version: 2, counts: state.counts, hunts: state.hunts, dupes: state.dupes, history: state.history, coins: state.coins, best: state.best, equipped: state.equipped, redeemed: state.redeemed, skills: state.skills, ts: state.ts || 0, pid: state.pid, pname: state.pname, lobby: state.lobby, unique: unique() };
+  }
+  function save() {
+    state.ts = Date.now();
+    try { localStorage.setItem(KEY, JSON.stringify(serialize())); storageOK = true; }
+    catch (e) { storageOK = false; }
+    regSelf();
+    schedulePublish();
+    scheduleCloud();
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      storageOK = true;
+      if (!raw) return freshState();
+      return sanitize(JSON.parse(raw)).state;
+    } catch (e) {
+      try { localStorage.setItem(KEY + '.test', '1'); localStorage.removeItem(KEY + '.test'); } catch (e2) { storageOK = false; }
+      return freshState();
+    }
+  }
+
+  /* ---------- hunting logic ---------- */
+  // With luck boost active, every rarity above Common has its weight multiplied; Common stays as is.
+  function weights() {
+    var L = luck() * (1 + luckSkillPct() / 100), hi = 1 + 0.03 * skLv('high');
+    return RARITIES.map(function (R, i) { return i === 0 ? R.w : R.w * L * (i >= 4 ? hi : 1); });
+  }
+  function rollRarity() {
+    var w = weights(), total = 0, i;
+    for (i = 0; i < w.length; i++) total += w[i];
+    var r = Math.floor(Math.random() * total), acc = 0;
+    for (i = 0; i < w.length; i++) {
+      acc += w[i];
+      if (r < acc) return i;
+    }
+    return 0;
+  }
+  function pickName(ri) {
+    var list = NAMES[ri];
+    var i = Math.floor(Math.random() * list.length);
+    if (i >= list.length) i = list.length - 1;
+    return list[i];
+  }
+  // Duplicates are never rerolled or excluded: any username can come back at any time.
+  function applyHunt(forced) {
+    var name;
+    if (forced && has(INDEX, forced)) name = forced;
+    else {
+      var rr = rollRarity(), pk = PITY[skLv('pity')];
+      if (pk && (state.hunts + 1) % pk === 0 && rr < 1) rr = 1;
+      if (boost.guarN > 0) { if (rr < boost.guarR) rr = boost.guarR; boost.guarN--; saveBoost(); }
+      name = pickName(rr);
+    }
+    var had = (state.counts[name] || 0) > 0;
+    state.counts[name] = (state.counts[name] || 0) + 1;
+    state.hunts++;
+    if (had) state.dupes++;
+    state.history.unshift({ n: name, d: had, t: Date.now() });
+    if (state.history.length > HISTORY_MAX) state.history.length = HISTORY_MAX;
+    var gbase = had ? Math.floor(COINS[INDEX[name]] * (0.5 + 0.05 * skLv('dupes'))) : COINS[INDEX[name]];
+    var gain = Math.round(gbase * coinMult() * (1 + 0.1 * skLv('coins')));
+    state.coins += gain;
+    if (!state.best || INDEX[name] > INDEX[state.best.n]) state.best = { n: name };
+    return { name: name, ri: INDEX[name], dup: had, count: state.counts[name], coins: gain };
+  }
+
+  function setBusy(on) {
+    var s = document.querySelectorAll('.sphere'), b = document.querySelectorAll('.btn[data-hunt]'), i;
+    for (i = 0; i < s.length; i++) { s[i].classList.toggle('charging', on); s[i].disabled = on; }
+    for (i = 0; i < b.length; i++) { b[i].disabled = on; b[i].textContent = on ? 'HUNTING\u2026' : b[i].getAttribute('data-label'); }
+  }
+  function hunt() {
+    if (busy || !$('reveal').hidden || cdLeft() > 0) return;
+    busy = true;
+    setBusy(true);
+    huntTimer = setTimeout(function () {
+      var res;
+      try {
+        res = applyHunt();
+        save();
+        renderAll();
+        showReveal(res);
+      } catch (e) {
+        busy = false; setBusy(false);
+        toast('Something went wrong. Please try again.');
+        if (window.console) console.error(e);
+      }
+    }, HUNT_MS);
+  }
+
+  /* ---------- reveal ---------- */
+  var T_PARTICLES = [0, 8, 14, 22, 30, 40, 50, 64];
+  var T_RINGS = [1, 1, 2, 2, 3, 4, 5, 6];
+  var T_DELAY = [0, 0.05, 0.15, 0.25, 0.5, 0.7, 0.9, 1.2];
+  var T_FLASH = [0, 0, 0.25, 0.35, 0.7, 0.8, 0.9, 1];
+  var T_BG = [0.15, 0.2, 0.3, 0.35, 0.45, 0.5, 0.6, 0.7];
+
+  function showReveal(res) {
+    var t = res.ri, R = RARITIES[t], rv = $('reveal'), fx = $('rv-fx'), i;
+    rv.className = 'reveal tier-' + t;
+    rv.style.setProperty('--c', R.color);
+    rv.style.setProperty('--cd', T_DELAY[t] + 's');
+    rv.style.setProperty('--bgo', T_BG[t]);
+    $('rv-icon').textContent = R.icon;
+    $('rv-rarity').textContent = R.name.toUpperCase();
+    var badge = $('rv-badge');
+    badge.className = 'rv-badge ' + (res.dup ? 'dup' : 'new');
+    badge.textContent = res.dup ? 'DUPLICATE' : 'NEW!';
+    $('rv-name').textContent = res.name;
+    $('rv-count').textContent = 'Total found: ' + res.count + (res.dup ? ' times' : ' time');
+    $('rv-progress').textContent = 'Collection: ' + unique() + ' / ' + TOTAL;
+    $('rv-coins').textContent = '+' + res.coins + ' coins';
+    $('rv-rays').hidden = t < 5;
+    clear(fx);
+    if (t >= 2) {
+      var fl = el('div', 'rv-flash');
+      fl.style.setProperty('--fo', T_FLASH[t]);
+      fx.appendChild(fl);
+    }
+    for (i = 0; i < T_RINGS[t]; i++) {
+      var ring = el('div', 'rv-ring');
+      ring.style.setProperty('--i', i);
+      fx.appendChild(ring);
+    }
+    for (i = 0; i < T_PARTICLES[t]; i++) {
+      var p = el('div', 'rv-p'), a = Math.random() * Math.PI * 2, d = 90 + Math.random() * (110 + t * 22);
+      p.style.setProperty('--dx', Math.round(Math.cos(a) * d) + 'px');
+      p.style.setProperty('--dy', Math.round(Math.sin(a) * d) + 'px');
+      p.style.setProperty('--d', (Math.random() * 0.35).toFixed(2) + 's');
+      fx.appendChild(p);
+    }
+    rv.hidden = false;
+    if (t >= 6 && !reduced) {
+      rv.classList.add('shake');
+      setTimeout(function () { rv.classList.remove('shake'); }, 600);
+    }
+    try { $('rv-continue').focus(); } catch (e) {}
+  }
+  function closeReveal() {
+    $('reveal').hidden = true;
+    clear($('rv-fx'));
+    busy = false;
+    setBusy(false);
+    startCooldown();
+  }
+
+  /* ---------- rendering ---------- */
+  function fmtTime(t) {
+    try { return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; }
+  }
+  function rarityCard(name, ri, extra, sub) {
+    var R = RARITIES[ri], c = el('div', 'card');
+    c.style.setProperty('--c', R.color);
+    c.appendChild(el('div', 'ic', R.icon));
+    var nm = el('div', 'nm', name);
+    if (sub) nm.appendChild(el('span', 'sm', sub));
+    c.appendChild(nm);
+    if (extra) c.appendChild(extra);
+    return c;
+  }
+  function emptyBox(title, text) {
+    var e = el('div', 'empty'); e.appendChild(el('b', null, '\u2726'));
+    e.appendChild(el('div', null, title));
+    e.appendChild(el('div', 'sm', text));
+    return e;
+  }
+  function pill(ri) { var p = el('span', 'pill', RARITIES[ri].name); p.style.setProperty('--c', RARITIES[ri].color); return p; }
+
+  function renderStats() {
+    var u = unique(), pct = Math.round(u / TOTAL * 100);
+    $('top-progress').textContent = u + ' / ' + TOTAL;
+    $('top-coins').textContent = '◎ ' + state.coins;
+    $('hm-coins').textContent = state.coins;
+    $('st-coins').textContent = state.coins;
+    $('st-best').textContent = state.best ? RARITIES[INDEX[state.best.n]].name : '—';
+    var eq = $('hm-equipped'); eq.textContent = state.equipped; eq.style.color = RARITIES[INDEX[state.equipped]].color;
+    $('hm-pname').textContent = state.pname || 'not set';
+    $('index-lead').textContent = 'All ' + TOTAL + ' usernames. Undiscovered ones stay locked until you hunt them.';
+    $('pname-form').hidden = !!state.pname;
+    $('pname-set').hidden = !state.pname;
+    $('pname-show').textContent = state.pname || '';
+    var prk = $('pname-rank'), rko = RANK_INFO[rankOf(state.pid)]; prk.textContent = state.pname ? rko.t : ''; prk.style.color = rko.c;
+    $('hm-unique').textContent = u + ' / ' + TOTAL;
+    $('hm-hunts').textContent = state.hunts;
+    $('hm-bar').style.width = pct + '%';
+    $('st-unique').textContent = u + ' / ' + TOTAL;
+    $('st-hunts').textContent = state.hunts;
+    $('st-dupes').textContent = state.dupes;
+    $('st-percent').textContent = pct + '%';
+    $('st-bar').style.width = pct + '%';
+    $('index-progress').textContent = u + ' / ' + TOTAL;
+    $('index-bar').style.width = pct + '%';
+    var last = $('st-last'); clear(last);
+    var h = state.history[0];
+    if (!h) last.appendChild(el('div', 'lead', 'No hunts yet. Tap the sphere!'));
+    else {
+      var tag = el('span', 'tag ' + (h.d ? 'dup' : 'new'), h.d ? 'DUPLICATE' : 'NEW');
+      last.appendChild(rarityCard(h.n, INDEX[h.n], tag, RARITIES[INDEX[h.n]].name + ' \u00B7 found ' + (state.counts[h.n] || 0) + '\u00D7'));
+    }
+    var hl = $('history-list'); clear(hl);
+    if (!state.history.length) hl.appendChild(emptyBox('Nothing here yet', 'Your recent hunts will show up here.'));
+    state.history.slice(0, 10).forEach(function (x) {
+      var tg = el('span', 'tag ' + (x.d ? 'dup' : 'new'), x.d ? 'DUP' : 'NEW');
+      hl.appendChild(rarityCard(x.n, INDEX[x.n], tg, RARITIES[INDEX[x.n]].name + ' \u00B7 ' + fmtTime(x.t)));
+    });
+  }
+  function renderCollection() {
+    var box = $('collection-list'); clear(box);
+    var q = ui.cq.trim().toLowerCase();
+    var items = DB.filter(function (d) {
+      return (state.counts[d.name] || 0) > 0 && (ui.cf === 'all' || ui.cf === String(d.r)) && d.name.toLowerCase().indexOf(q) > -1;
+    }).sort(function (a, b) { return b.r - a.r || (a.name < b.name ? -1 : 1); });
+    $('collection-count').textContent = unique() + ' of ' + TOTAL + ' usernames collected' + (items.length !== unique() ? ' \u00B7 showing ' + items.length : '');
+    if (!items.length) { box.appendChild(emptyBox('No matches', 'Try a different search or filter.')); return; }
+    items.forEach(function (d) {
+      var wrap = el('div');
+      wrap.style.display = 'contents';
+      var right = el('div'); right.style.textAlign = 'right';
+      right.appendChild(pill(d.r));
+      right.appendChild(el('span', 'sm', 'Found \u00D7' + state.counts[d.name]));
+      right.lastChild.style.cssText = 'display:block;font-size:12px;color:#9b8fb8;margin-top:4px';
+      if (state.equipped === d.name) {
+        var et = el('span', 'tag new', 'EQUIPPED');
+        et.style.cssText = 'display:inline-block;margin-top:6px';
+        right.appendChild(et);
+      } else {
+        var eb = el('button', 'btn sm', 'Equip');
+        eb.type = 'button';
+        eb.addEventListener('click', function () { equip(d.name); });
+        right.appendChild(eb);
+      }
+      wrap.appendChild(rarityCard(d.name, d.r, right));
+      box.appendChild(wrap);
+    });
+  }
+  function renderIndex() {
+    var box = $('index-list'); clear(box);
+    var q = ui.iq.trim().toLowerCase(), shown = 0;
+    DB.forEach(function (d) {
+      var found = (state.counts[d.name] || 0) > 0, ok;
+      if (q) ok = found && d.name.toLowerCase().indexOf(q) > -1 && (ui.xf === 'all' || ui.xf === String(d.r));
+      else if (ui.xf === 'all') ok = true;
+      else if (ui.xf === 'locked') ok = !found;
+      else ok = found && ui.xf === String(d.r);
+      if (q && ui.xf === 'locked') ok = false;
+      if (!ok) return;
+      shown++;
+      if (found) {
+        var right = el('div'); right.style.textAlign = 'right';
+        right.appendChild(pill(d.r));
+        var s = el('span', null, '\u00D7' + state.counts[d.name]);
+        s.style.cssText = 'display:block;font-size:12px;color:#9b8fb8;margin-top:4px';
+        right.appendChild(s);
+        box.appendChild(rarityCard(d.name, d.r, right));
+      } else {
+        var c = el('div', 'card locked');
+        c.appendChild(el('div', 'ic', '?'));
+        c.appendChild(el('div', 'nm', '??????'));
+        c.appendChild(el('span', 'pill', 'Locked'));
+        box.appendChild(c);
+      }
+    });
+    if (!shown) box.appendChild(emptyBox('No matches', q || ui.xf !== 'all' ? 'Only discovered usernames can be searched or filtered by rarity.' : 'Nothing to show.'));
+  }
+  function renderSettings() {
+    var tb = $('odds-list'); clear(tb);
+    var total = 0, wts = weights(), sum = 0;
+    wts.forEach(function (x) { sum += x; });
+    RARITIES.forEach(function (R, i) {
+      var tr = el('tr'), td = el('td');
+      var s = el('span', null, R.icon + ' ' + R.name); s.style.color = R.color; s.style.fontWeight = '700';
+      td.appendChild(s); tr.appendChild(td);
+      tr.appendChild(el('td', null, String(NAMES[i].length)));
+      tr.appendChild(el('td', null, (wts[i] / sum * 100).toFixed(luck() > 1 || luckSkillPct() || skLv('high') ? 2 : 1) + '%'));
+      tb.appendChild(tr);
+      total += R.w;
+    });
+    var tr2 = el('tr');
+    tr2.appendChild(el('td', null, 'Total')); tr2.appendChild(el('td', null, String(TOTAL))); tr2.appendChild(el('td', null, (total / 10).toFixed(1) + '%'));
+    tr2.style.fontWeight = '800';
+    tb.appendChild(tr2);
+    $('odds-note').textContent = luck() > 1
+      ? luck() + 'x LUCK is active: every rarity above Common is ' + luck() + ' times as likely, so Common becomes less frequent. The chances above are the live odds.'
+      : 'A rarity is rolled first using these chances, then one username of that rarity is chosen evenly.';
+    if (luckSkillPct() || skLv('high')) $('odds-note').textContent += ' Your skill tree luck (+' + luckSkillPct() + '%' + (skLv('high') ? ', High Roller +' + 3 * skLv('high') + '% for Legendary and above' : '') + ') is included in these odds.';
+    var ss = $('storage-status');
+    ss.className = 'msg ' + (storageOK ? 'ok' : 'bad');
+    ss.textContent = storageOK ? 'Browser storage is available. Your progress is being saved.' : 'Browser storage is unavailable here, so progress will be lost when you close the page. Use Export Save to keep a backup.';
+  }
+  function renderAll() { renderStats(); renderCollection(); renderIndex(); renderRanks(); renderLobby(); renderSettings(); renderAdmin(); renderShop(); renderSkills(); renderLocalDb(); renderGlobalPanel(); renderCloud(); }
+
+  /* ---------- equip & codes ---------- */
+  function equip(name) {
+    if (!has(INDEX, name) || !(state.counts[name] > 0)) return;
+    state.equipped = name;
+    save();
+    renderAll();
+    toast('Equipped ' + name + '.');
+  }
+  function redeem() {
+    var inp = $('code-input'), msg = $('code-msg'), rawCode = inp.value.trim(), code = rawCode.toUpperCase();
+    function say(t, ok) { msg.className = 'msg ' + (ok ? 'ok' : 'bad'); msg.textContent = t; }
+    if (!code) { say('Enter a code first.', false); return; }
+    var hv = hashStr(rawCode);
+    if (hv === OWNER_HASH) { adminPass = rawCode; inp.value = ''; say('Owner panel unlocked. Find it at the top of Settings.', true); unlockAdmin('owner'); return; }
+    if (hv === ADMIN_HASH) { adminPass = rawCode; inp.value = ''; say('Admin panel unlocked. Find it at the top of Settings.', true); unlockAdmin('admin'); return; }
+    if (rawCode.indexOf('UHBOOST-') === 0) {
+      var br = redeemBoost(rawCode);
+      if (br.ok) inp.value = '';
+      say(br.text, br.ok);
+      return;
+    }
+    if (!has(CODES, code)) { redeemOnline(code, inp, say); return; }
+    if (state.redeemed.indexOf(code) > -1) { say('You already redeemed this code.', false); return; }
+    state.redeemed.push(code);
+    state.coins += CODES[code];
+    save();
+    renderAll();
+    inp.value = '';
+    say('Code accepted! +' + CODES[code] + ' coins.', true);
+  }
+
+  /* ---------- admin panel & luck boost ---------- */
+  var ADMIN_KEY = 'usernameHunter.admin.v1', BOOST_KEY = 'usernameHunter.boost.v1';
+  var OWNER_HASH = '3560940e-dc4d5866'; // like the admin code, only a hash is stored here
+  var ADMIN_HASH = '3c5fe4de-c846edc2'; // the admin code is not stored as plain text (this only hides it from casual reading)
+  var BOOST_MULT = 2, BOOST_MIN = 10, MAX_BOOST_MIN = 60, TOKEN_WINDOW = 3600000;
+  var TOKEN_RE = /^UHBOOST-([A-Z2-9]{6})-([a-z0-9]{4,7})-([a-z0-9]{1,7})$/;
+  var admin = false, owner = false, adminSide = 'local', wasLuck = false, wasCoin = false, wasEv = false, adminPass = '';
+
+  function h32(s) {
+    var a = 0x811c9dc5 >>> 0;
+    for (var i = 0; i < s.length; i++) { a ^= s.charCodeAt(i); a = Math.imul(a, 16777619) >>> 0; }
+    return a;
+  }
+  function hashStr(s) {
+    var b = 5381;
+    for (var i = 0; i < s.length; i++) b = (Math.imul(b, 33) + s.charCodeAt(i)) >>> 0;
+    return h32(s).toString(16) + '-' + b.toString(16);
+  }
+  function boostLeft() { return Math.max(0, boost.until - Date.now()); }
+  function evLeft() { return Math.max(0, ev.until - Date.now()); }
+  function luck() { var m = boostLeft() > 0 ? boost.mult : 1; return (evLeft() > 0 && ev.mult > m) ? ev.mult : m; }
+  function coinLeft() { return Math.max(0, boost.cuntil - Date.now()); }
+  function coinMult() { var m = coinLeft() > 0 ? boost.cmult : 1; return (evLeft() > 0 && ev.cmult > m) ? ev.cmult : m; }
+  function saveBoost() { try { localStorage.setItem(BOOST_KEY, JSON.stringify(boost)); } catch (e) {} }
+  function loadBoost() {
+    try {
+      var o = JSON.parse(localStorage.getItem(BOOST_KEY) || 'null');
+      if (o && typeof o === 'object') {
+        var lim = Date.now() + 10080 * 60000 + 60000;
+        if (typeof o.until === 'number' && isFinite(o.until) && o.until <= lim) boost.until = o.until;
+        if (isInt(o.mult) && o.mult >= 1 && o.mult <= 100) boost.mult = o.mult;
+        if (typeof o.cuntil === 'number' && isFinite(o.cuntil) && o.cuntil <= lim) boost.cuntil = o.cuntil;
+        if (isInt(o.cmult) && o.cmult >= 1 && o.cmult <= 100) boost.cmult = o.cmult;
+        if (isInt(o.guarN) && o.guarN <= 1000) boost.guarN = o.guarN;
+        if (isInt(o.guarR) && o.guarR >= 1 && o.guarR <= 7) boost.guarR = o.guarR;
+        if (Array.isArray(o.used)) boost.used = o.used.filter(function (x) { return typeof x === 'string' && /^[A-Z2-9]{6}$/.test(x); }).slice(-50);
+      }
+    } catch (e) {}
+  }
+  function loadAdmin() { try { return localStorage.getItem(ADMIN_KEY) || ''; } catch (e) { return ''; } }
+  function setAdmin(on, r) {
+    admin = on; owner = on && r === 'owner';
+    try { if (on) localStorage.setItem(ADMIN_KEY, owner ? '2' : '1'); else localStorage.removeItem(ADMIN_KEY); } catch (e) {}
+  }
+  function fmtLeft(ms) {
+    var s = Math.ceil(ms / 1000), m = Math.floor(s / 60);
+    s = s % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+  function tickBoost() {
+    var left = boostLeft(), on = left > 0, cl = coinLeft(), con = cl > 0, el2 = evLeft(), eon = el2 > 0 && (ev.mult > 1 || ev.cmult > 1), bar = $('luck-bar'), parts = [], as = [];
+    if (on) parts.push(boost.mult + 'x LUCK ' + fmtLeft(left));
+    if (eon) parts.push('EVENT ' + evBar() + ' ' + fmtLeft(el2));
+    if (boost.guarN > 0) { parts.push(RARITIES[boost.guarR].name.toUpperCase() + '+ x' + boost.guarN); as.push(boost.guarN + ' hunts at least ' + RARITIES[boost.guarR].name); }
+    if (con) parts.push(boost.cmult + 'x COINS ' + fmtLeft(cl));
+    if (on) as.push(boost.mult + 'x luck ' + fmtLeft(left) + ' left');
+    if (con) as.push(boost.cmult + 'x coins ' + fmtLeft(cl) + ' left');
+    bar.hidden = !parts.length;
+    if (parts.length) bar.textContent = parts.join(' · ');
+    $('admin-status').className = 'msg ' + (as.length ? 'ok' : '');
+    $('admin-status').textContent = as.length ? 'Active: ' + as.join(' · ') + '.' : 'No boost active.';
+    $('ev-status').className = 'msg ' + (eon ? 'ok' : '');
+    $('ev-status').textContent = eon ? 'Global event active: ' + evText(ev.mult, ev.cmult) + ' for everyone, ' + fmtLeft(el2) + ' left.' : 'No global event right now.';
+    $('shop-active').textContent = parts.length ? parts.join('  ·  ') : 'No active boosts.';
+    if (wasLuck && !on) { renderSettings(); toast('Luck boost ended.'); }
+    if (wasCoin && !con) toast('Coin boost ended.');
+    if (wasEv && !eon) { renderSettings(); toast('Global event ended.'); }
+    wasEv = eon;
+    wasLuck = on;
+    wasCoin = con;
+  }
+  // Luck: a stronger boost is never replaced by a weaker one; the same strength can be extended (shop) up to the cap.
+  function applyLuck(mult, mins, extend, force) {
+    var now = Date.now(), left = boostLeft();
+    if (left > 0 && boost.mult > mult) {
+      if (!force) return { ok: false, text: 'A stronger ' + boost.mult + 'x luck boost is already active.' };
+      boost.until += mins * 60000; // a stronger boost keeps running; the time is added to it so it is not lost
+      saveBoost(); wasLuck = true; renderAll(); tickBoost();
+      return { ok: true, extended: true };
+    }
+    var base = (extend && left > 0 && boost.mult === mult) ? boost.until : now;
+    if (!force && base + mins * 60000 - now > MAX_BOOST_MIN * 60000) return { ok: false, text: 'Boost time is capped at ' + MAX_BOOST_MIN + ' minutes. Wait until it runs lower.' };
+    boost.mult = mult;
+    boost.until = base + mins * 60000;
+    saveBoost();
+    wasLuck = true;
+    renderAll();
+    tickBoost();
+    return { ok: true };
+  }
+  function applyCoinBoost(mins, mult, force) {
+    mult = mult || 2;
+    var now = Date.now(), left = coinLeft();
+    if (left > 0 && boost.cmult > mult) {
+      if (!force) return { ok: false, text: 'A stronger ' + boost.cmult + 'x coin boost is already active.' };
+      boost.cuntil += mins * 60000;
+      saveBoost(); wasCoin = true; renderAll(); tickBoost();
+      return { ok: true, extended: true };
+    }
+    var base = (left > 0 && boost.cmult === mult) ? boost.cuntil : now;
+    if (!force && base + mins * 60000 - now > MAX_BOOST_MIN * 60000) return { ok: false, text: 'Boost time is capped at ' + MAX_BOOST_MIN + ' minutes. Wait until it runs lower.' };
+    boost.cmult = mult;
+    boost.cuntil = base + mins * 60000;
+    saveBoost();
+    wasCoin = true;
+    renderAll();
+    tickBoost();
+    return { ok: true };
+  }
+  function startBoost() { return applyLuck(BOOST_MULT, BOOST_MIN, false).ok; }
+  function stopCoinBoost() {
+    boost.cuntil = 0;
+    saveBoost();
+    wasCoin = false;
+    renderAll();
+    tickBoost();
+  }
+  function stopBoost() {
+    boost.until = 0;
+    saveBoost();
+    wasLuck = false;
+    renderAll();
+    tickBoost();
+  }
+  function makeBoostToken() {
+    var a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', id = '', i;
+    for (i = 0; i < 6; i++) id += a.charAt(Math.floor(Math.random() * a.length));
+    var t = Math.floor(Date.now() / 60000).toString(36);
+    return 'UHBOOST-' + id + '-' + t + '-' + h32(id + t + 'uh-boost').toString(36);
+  }
+  function redeemBoost(raw) {
+    var bad = { ok: false, text: 'That boost code is not valid.' };
+    var m = TOKEN_RE.exec(raw);
+    if (!m) return bad;
+    if (h32(m[1] + m[2] + 'uh-boost').toString(36) !== m[3]) return bad;
+    var made = parseInt(m[2], 36) * 60000, now = Date.now();
+    if (!isFinite(made) || made > now + 5 * 60000) return bad;
+    if (now - made > TOKEN_WINDOW) return { ok: false, text: 'That boost code has expired.' };
+    if (boost.used.indexOf(m[1]) > -1) return { ok: false, text: 'You already used this boost code.' };
+    if (!startBoost()) return { ok: false, text: 'A stronger boost is already active. Try again when it ends.' };
+    boost.used.push(m[1]);
+    if (boost.used.length > 50) boost.used.shift();
+    saveBoost();
+    return { ok: true, text: 'Boost code accepted! ' + BOOST_MULT + 'x luck for ' + BOOST_MIN + ' minutes.' };
+  }
+  function renderAdmin() {
+    if (adminSide === 'players' && !owner) adminSide = 'local';
+    $('admin-panel').hidden = !admin;
+    $('admin-title').textContent = owner ? 'Owner panel' : 'Admin panel';
+    $('admin-local').hidden = adminSide !== 'local';
+    $('admin-global').hidden = adminSide !== 'global';
+    $('admin-players').hidden = adminSide !== 'players' || !owner;
+    $('admin-tab-players').hidden = !owner;
+    $('admin-tab-local').classList.toggle('on', adminSide === 'local');
+    $('admin-tab-global').classList.toggle('on', adminSide === 'global');
+    $('admin-tab-players').classList.toggle('on', adminSide === 'players');
+  }
+  function unlockAdmin(r) {
+    setAdmin(true, r);
+    setRoleOptions();
+    renderAll();
+    show('settings');
+    if (r === 'owner' && cloud.pname && adminPass) rpc('rank_set', { p_admin: adminPass, p_pname: cloud.pname, p_rank: 'owner' }).then(function () { loadRanks(); }).catch(function () {});
+  }
+
+  /* ---------- ranks ---------- */
+  var RANK_ORDER = ['member', 'vip', 'admin', 'owner'];
+  var RANK_INFO = { member: { t: 'Member', c: '#a8b3c7' }, vip: { t: 'VIP', c: '#fbbf24' }, admin: { t: 'Admin', c: '#4aa3ff' }, owner: { t: 'Owner', c: '#ec4899' } };
+  function rankOf(pid) {
+    var r = (gl.ranks && gl.ranks[pid]) || (pid === state.pid && cloud.rank) || 'member';
+    return has(RANK_INFO, r) ? r : 'member';
+  }
+  function loadRanks() {
+    if (!gl.url) return Promise.resolve();
+    return sbFetch('GET', '/rest/v1/ranks?select=pid,pname,rank').then(function (d) {
+      var m = {}, nm = {};
+      if (Array.isArray(d)) d.forEach(function (o) {
+        if (o && typeof o.pid === 'string' && ID_RE.test(o.pid) && has(RANK_INFO, o.rank) && o.rank !== 'member' && typeof o.pname === 'string' && NAME_RE.test(o.pname)) { m[o.pid] = o.rank; nm[o.pid] = o.pname; }
+      });
+      gl.ranks = m; gl.rankNames = nm;
+      if (cloud.pname) cloud.rank = m[state.pid] || 'member';
+      renderRanks(); renderStats(); renderCloud();
+      if (owner) { renderOwnerRanks(); fillPlayerPick(); }
+    }).catch(function () {});
+  }
+
+  /* ---------- admin / owner tools (boosts, codes, global event, ranks) ---------- */
+  function capOf(kind) { return owner ? 100 : { ev: 10, code: 25, local: 50 }[kind]; }
+  function adminLimitMin() { return owner ? 10080 : 1440; }
+  function clampInt(v, lo, hi, def) { v = parseInt(v, 10); if (!isFinite(v)) v = def; return Math.max(lo, Math.min(hi, v)); }
+  function adminNum(id, def, lo, hi) { return clampInt($(id).value, lo, hi, def); }
+  function durMin(idv, idu, def) { return Math.min(adminNum(idv, def, 1, 100000) * adminNum(idu, 1, 1, 1440), adminLimitMin()); }
+  function adminSecret() { return ($('admin-pass').value || '').trim() || adminPass; }
+  function adminSay(id, t, ok) { var m = $(id); m.className = 'msg ' + (ok ? 'ok' : 'bad'); m.textContent = t; }
+  function adminNetErr(e) { return e && e.status === 404 ? 'The tables are not set up yet. Run the newest setup SQL in Supabase.' : 'Could not reach the server. Check your connection.'; }
+  function adminErr(r) {
+    if (r === 'forbidden') return 'Wrong code.';
+    if (r === 'owner_only') return 'That is above the admin limits. It needs the owner panel.';
+    if (r === 'no_player') return 'No player with that name.';
+    return 'Not possible (' + r + ').';
+  }
+  function fmtMins(m) { if (m < 60) return m + ' min'; if (m < 1440) return (Math.round(m / 6) / 10) + ' h'; return (Math.round(m / 144) / 10) + ' d'; }
+  function fillSelect(id, vals, fmt) {
+    var s = $(id), cur = s.value; clear(s);
+    vals.forEach(function (v) { var o = el('option', null, fmt(v)); o.value = String(v); s.appendChild(o); });
+    if (cur && vals.map(String).indexOf(cur) > -1) s.value = cur;
+  }
+  function strengths(kind) { return [2, 3, 5, 10, 25, 50, 100].filter(function (x) { return x <= capOf(kind); }); }
+  function setRoleOptions() {
+    var f = function (x) { return x + 'x'; };
+    fillSelect('admin-mult', strengths('local'), f); fillSelect('admin-cmult', strengths('local'), f); fillSelect('admin-gmult', strengths('local'), f);
+    fillSelect('ac-mult', strengths('code'), f); fillSelect('ev-mult', strengths('ev'), f);
+    var top = owner ? 7 : 4, rs = []; for (var i = 1; i <= top; i++) rs.push(i);
+    fillSelect('admin-guar-r', rs, function (i) { return RARITIES[i].name; });
+  }
+  function describeCode(c) {
+    if (c.kind === 'luck') return c.mult + 'x luck for ' + c.mins + ' min';
+    if (c.kind === 'coins') return c.mult + 'x coins for ' + c.mins + ' min';
+    return '+' + fmtNum(c.amount) + ' coins';
+  }
+  function cleanCodeRow(o) {
+    if (!o || typeof o !== 'object' || typeof o.code !== 'string' || !/^[A-Z0-9]{4,20}$/.test(o.code)) return null;
+    if (['luck', 'coins', 'gift'].indexOf(o.kind) < 0) return null;
+    if (!isInt(o.mult) || !isInt(o.mins) || !isInt(o.amount) || !isInt(o.left_min) || !isInt(o.max_uses) || !isInt(o.uses)) return null;
+    return o;
+  }
+  function renderCodes(rows) {
+    var box = $('admin-codes'); clear(box);
+    if (!rows.length) { box.appendChild(el('p', 'lead', 'No codes yet.')); return; }
+    rows.forEach(function (c) {
+      var card = el('div', 'card');
+      card.style.setProperty('--c', '#fbbf24');
+      card.appendChild(el('div', 'ic', '✦'));
+      var nm = el('div', 'nm', c.code);
+      nm.appendChild(el('span', 'sm', describeCode(c) + ' · ' + c.uses + (c.max_uses ? '/' + c.max_uses : '') + ' used · ' + (c.left_min > 0 ? fmtMins(c.left_min) + ' left' : 'expired')));
+      card.appendChild(nm);
+      var b = el('button', 'btn sm', 'Delete');
+      b.type = 'button';
+      b.addEventListener('click', function () {
+        askConfirm('Delete code ' + c.code + '?', 'Players can no longer redeem it. Boosts they already got stay.', 'Delete', function () {
+          rpc('code_delete', { p_admin: adminSecret(), p_code: c.code }).then(function (r) {
+            if (r === 'ok') { adminSay('admin-cmsg', 'Code deleted.', true); refreshCodes(); } else adminSay('admin-cmsg', adminErr(r), false);
+          }).catch(function (e) { adminSay('admin-cmsg', adminNetErr(e), false); });
+        });
+      });
+      card.appendChild(b);
+      box.appendChild(card);
+    });
+  }
+  function refreshCodes() {
+    var pass = adminSecret();
+    if (!pass) { adminSay('admin-cmsg', 'Enter your code first.', false); return Promise.resolve(); }
+    return rpc('code_list', { p_admin: pass }).then(function (r) {
+      if (!Array.isArray(r)) { adminSay('admin-cmsg', 'Wrong code.', false); return; }
+      var rows = []; r.forEach(function (o) { var c = cleanCodeRow(o); if (c) rows.push(c); });
+      renderCodes(rows);
+    }).catch(function (e) { adminSay('admin-cmsg', adminNetErr(e), false); });
+  }
+  function createCode() {
+    if (!admin) return;
+    var pass = adminSecret();
+    if (!pass) { adminSay('admin-cmsg', 'Enter your code first.', false); return; }
+    var kind = $('ac-kind').value; if (['luck', 'coins', 'gift'].indexOf(kind) < 0) kind = 'luck';
+    var mult = kind === 'gift' ? 1 : adminNum('ac-mult', 2, 1, capOf('code'));
+    var mins = kind === 'gift' ? 0 : Math.min(adminNum('ac-mins', 10, 1, 10080), adminLimitMin());
+    var amount = kind === 'gift' ? adminNum('ac-amount', 1000, 1, owner ? 1000000000 : 100000) : 0;
+    var life = adminNum('ac-life', 60, 1, 525600) * adminNum('ac-unit', 1, 1, 1440);
+    if (life > 525600) { adminSay('admin-cmsg', 'A code can last at most 365 days.', false); return; }
+    var max = adminNum('ac-max', 0, 0, 1000000);
+    var name = ($('ac-name').value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (!name) name = randomCode(8);
+    if (name.length < 4 || name.length > 20) { adminSay('admin-cmsg', 'Use 4 to 20 letters or numbers for the code name.', false); return; }
+    adminSay('admin-cmsg', 'Creating…', true);
+    rpc('code_create', { p_admin: pass, p_code: name, p_kind: kind, p_mult: mult, p_mins: mins, p_amount: amount, p_expire_mins: life, p_max_uses: max }).then(function (r) {
+      if (r === 'ok') {
+        adminPass = pass;
+        $('admin-token').value = name;
+        adminSay('admin-cmsg', 'Code created: ' + name + ' (' + describeCode({ kind: kind, mult: mult, mins: mins, amount: amount }) + ', valid ' + fmtMins(life) + (max ? ', max ' + max + ' players' : '') + ').', true);
+        refreshCodes();
+      } else if (r === 'exists') adminSay('admin-cmsg', 'That code name already exists. Choose another or delete the old one.', false);
+      else adminSay('admin-cmsg', adminErr(r), false);
+    }).catch(function (e) { adminSay('admin-cmsg', adminNetErr(e), false); });
+  }
+  function eventSet(mult, cmult, mins) {
+    var pass = adminSecret();
+    if (!pass) { adminSay('ev-msg', 'Enter your code first.', false); return; }
+    rpc('event_set', { p_admin: pass, p_mult: mult, p_cmult: cmult, p_mins: mins }).then(function (r) {
+      if (r === 'ok') {
+        adminPass = pass;
+        adminSay('ev-msg', mins > 0 ? 'Global event started: ' + evText(mult, cmult) + ' for ' + fmtMins(mins) + '.' : 'Global event ended.', true);
+        fetchEvent();
+      } else adminSay('ev-msg', adminErr(r), false);
+    }).catch(function (e) { adminSay('ev-msg', adminNetErr(e), false); });
+  }
+  function evBar() { var p = []; if (ev.mult > 1) p.push(ev.mult + 'x LUCK'); if (ev.cmult > 1) p.push(ev.cmult + 'x COINS'); return p.join(' + '); }
+  function evText(m, c) { var p = []; if (m > 1) p.push(m + 'x luck'); if (c > 1) p.push(c + 'x coins'); return p.join(' + '); }
+  function fetchEvent() {
+    if (!gl.url) return Promise.resolve();
+    return rpc('event_get', {}).then(function (r) {
+      var m = r && isInt(r.mult) ? r.mult : 1, c = r && isInt(r.cmult) ? r.cmult : 1, ms = r && isInt(r.left_ms) ? r.left_ms : 0;
+      if (m < 1 || m > 100 || c < 1 || c > 100 || ms > 10080 * 60000 + 60000) { m = 1; c = 1; ms = 0; }
+      var changed = m !== ev.mult || c !== ev.cmult || (ms > 0) !== (evLeft() > 0);
+      ev.mult = m; ev.cmult = c;
+      ev.until = ms > 0 ? Date.now() + ms : 0;
+      if (changed) { tickBoost(); renderSettings(); }
+    }).catch(function () {});
+  }
+  function buildGiveList() {
+    var s = $('admin-give'); clear(s);
+    var o0 = el('option', null, 'Choose a username'); o0.value = ''; s.appendChild(o0);
+    for (var r = RARITIES.length - 1; r >= 0; r--) DB.forEach(function (d) {
+      if (d.r !== r) return;
+      var o = el('option', null, d.name + ' (' + RARITIES[r].name + ')'); o.value = d.name; s.appendChild(o);
+    });
+  }
+  /* owner: players, ranks, resets */
+  function ownerName() { return ($('ow-name').value || '').trim(); }
+  function ownerSay(t, ok) { adminSay('ow-msg', t, ok); }
+  function fillPlayerPick() {
+    var s = $('ow-pick'), cur = s.value; clear(s);
+    var o0 = el('option', null, 'Pick a player…'); o0.value = ''; s.appendChild(o0);
+    var names = {};
+    gl.rows.forEach(function (r) { names[r.pname] = 1; });
+    Object.keys(reg).forEach(function (k) { names[reg[k].pname] = 1; });
+    Object.keys(names).sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1; }).forEach(function (n) { var o = el('option', null, n); o.value = n; s.appendChild(o); });
+    s.value = cur;
+  }
+  function renderOwnerRanks() {
+    var box = $('ow-ranks'); clear(box);
+    var ids = Object.keys(gl.ranks || {});
+    if (!ids.length) { box.appendChild(el('p', 'lead', 'Nobody has a special rank yet. Everyone else is a Member.')); return; }
+    ids.sort(function (a, b) { return RANK_ORDER.indexOf(gl.ranks[b]) - RANK_ORDER.indexOf(gl.ranks[a]); });
+    ids.forEach(function (pid) {
+      var rk = gl.ranks[pid], card = el('div', 'card');
+      card.style.setProperty('--c', RANK_INFO[rk].c);
+      card.appendChild(el('div', 'ic', '★'));
+      var nm = el('div', 'nm', gl.rankNames[pid] || pid);
+      nm.appendChild(el('span', 'sm', RANK_INFO[rk].t));
+      card.appendChild(nm);
+      box.appendChild(card);
+    });
+  }
+  function ownerCall(fn, body, okText) {
+    if (!owner) return;
+    var n = ownerName(), pass = adminSecret();
+    if (!NAME_RE.test(n)) { ownerSay('Type the player name first.', false); return; }
+    if (!pass) { ownerSay('Enter the owner code on the Global tab first.', false); return; }
+    body.p_admin = pass; body.p_pname = n;
+    rpc(fn, body).then(function (r) {
+      if (r === 'ok') { adminPass = pass; ownerSay(okText(n), true); loadRanks(); if (gl.url) fetchGlobal(); } else ownerSay(adminErr(r), false);
+    }).catch(function (e) { ownerSay(adminNetErr(e), false); });
+  }
+  function ownerRank() {
+    var rk = $('ow-rank').value; if (RANK_ORDER.indexOf(rk) < 0) rk = 'member';
+    ownerCall('rank_set', { p_rank: rk }, function (n) { return n + ' is now ' + RANK_INFO[rk].t + '.'; });
+  }
+  function ownerReset(mode) {
+    var n = ownerName();
+    if (!owner || !NAME_RE.test(n)) { ownerSay('Type the player name first.', false); return; }
+    askConfirm(mode === 'delete' ? 'Delete the account of ' + n + '?' : 'Reset the progress of ' + n + '?',
+      mode === 'delete' ? 'The account, leaderboard row and rank are removed and the name becomes free. This cannot be undone.' : 'The player starts over (name, password and rank stay). This cannot be undone.',
+      mode === 'delete' ? 'Delete' : 'Reset', function () {
+        ownerCall('owner_reset_player', { p_mode: mode }, function (nn) { return mode === 'delete' ? 'Account of ' + nn + ' deleted.' : 'Progress of ' + nn + ' will be reset.'; });
+      });
+  }
+  function redeemOnline(code, inp, say) {
+    if (!/^[A-Z0-9]{4,20}$/.test(code)) { say('That code is not valid.', false); return; }
+    say('Checking the code…', true);
+    rpc('code_redeem', { p_code: code, p_pid: state.pid }).then(function (r) {
+      var st = r && typeof r.status === 'string' ? r.status : 'invalid';
+      if (st !== 'ok') {
+        say({ expired: 'This code has expired.', used: 'You already redeemed this code.', maxed: 'This code has reached its limit of players.' }[st] || 'That code is not valid.', false);
+        return;
+      }
+      var mult = clampInt(r.mult, 1, 100, 1), mins = clampInt(r.mins, 0, 10080, 0), amount = clampInt(r.amount, 0, 1000000000, 0);
+      if (r.kind === 'luck' && mins > 0) { applyLuck(mult, mins, false, true); say('Code accepted! ' + mult + 'x luck for ' + mins + ' minutes.', true); }
+      else if (r.kind === 'coins' && mins > 0) { applyCoinBoost(mins, mult, true); say('Code accepted! ' + mult + 'x coins for ' + mins + ' minutes.', true); }
+      else if (r.kind === 'gift' && amount > 0) { state.coins = Math.min(1000000000, state.coins + amount); save(); renderAll(); say('Code accepted! +' + fmtNum(amount) + ' coins.', true); }
+      else { say('That code is not valid.', false); return; }
+      inp.value = '';
+    }).catch(function () { say('Could not check the code. Check your connection and try again.', false); });
+  }
+  function startGuar(n, r) { boost.guarN = n; boost.guarR = r; saveBoost(); tickBoost(); }
+
+
+  /* ---------- skill tree ---------- */
+  var PITY = [0, 25, 20, 15, 10, 7];
+  var SKILLS = [
+    { id: 'luck', branch: 'Luck', name: 'Lucky Charm', icon: '✦', max: 30, base: 180, g: 1.19, req: null, desc: 'Every rarity above Common gets more likely.', eff: function (l) { return '+' + (5 * l) + '% luck'; } },
+    { id: 'pity', branch: 'Luck', name: 'Safety Net', icon: '♣', max: 5, base: 450, g: 1.9, req: { id: 'luck', lv: 5 }, desc: 'Every few hunts you are guaranteed at least a Rare.', eff: function (l) { return l ? 'every ' + PITY[l] + 'th hunt is Rare or better' : 'off'; } },
+    { id: 'high', branch: 'Luck', name: 'High Roller', icon: '★', max: 10, base: 600, g: 1.3, req: { id: 'luck', lv: 15 }, desc: 'Legendary, Mythic, Ultra Mythic and God get extra likely.', eff: function (l) { return '+' + (3 * l) + '% for Legendary and above'; } },
+    { id: 'cool', branch: 'Speed', name: 'Quick Hands', icon: '⌛', max: 10, base: 300, g: 1.45, req: null, desc: 'Shortens the wait between hunts (minimum 1 second).', eff: function (l) { return (Math.max(1, 3 - 0.2 * l)).toFixed(1) + ' s cooldown'; } },
+    { id: 'coins', branch: 'Wealth', name: 'Coin Magnet', icon: '◎', max: 10, base: 240, g: 1.35, req: null, desc: 'More coins from every hunt.', eff: function (l) { return '+' + (10 * l) + '% coins'; } },
+    { id: 'dupes', branch: 'Wealth', name: 'Recycler', icon: '♻', max: 10, base: 360, g: 1.35, req: { id: 'coins', lv: 3 }, desc: 'Duplicates pay more (normally half).', eff: function (l) { return 'duplicates pay ' + (50 + 5 * l) + '%'; } },
+    { id: 'disc', branch: 'Wealth', name: 'Haggler', icon: '⚖', max: 10, base: 500, g: 1.4, req: { id: 'coins', lv: 5 }, desc: 'Cheaper prices in the Shop.', eff: function (l) { return '-' + (2 * l) + '% shop prices'; } },
+    { id: 'blen', branch: 'Wealth', name: 'Long Boosts', icon: '⏳', max: 5, base: 700, g: 1.7, req: { id: 'disc', lv: 3 }, desc: 'Boosts bought in the Shop last longer.', eff: function (l) { return '+' + (10 * l) + '% boost time'; } }
+  ];
+  function skLv(id) { return (state && state.skills && state.skills[id]) || 0; }
+  function skDef(id) { for (var i = 0; i < SKILLS.length; i++) if (SKILLS[i].id === id) return SKILLS[i]; return null; }
+  function skCost(sk, lv) { return Math.round(sk.base * Math.pow(sk.g, lv)); }
+  function skLocked(sk) { return !!sk.req && skLv(sk.req.id) < sk.req.lv; }
+  function luckSkillPct() { return 5 * skLv('luck'); }
+  function skMsg(t, ok) { var m = $('sk-msg'); m.className = 'msg ' + (ok ? 'ok' : 'bad'); m.textContent = t; }
+  function buySkill(sk) {
+    var lv = skLv(sk.id);
+    if (lv >= sk.max) return;
+    if (skLocked(sk)) { skMsg('Locked: needs ' + skDef(sk.req.id).name + ' level ' + sk.req.lv + '.', false); return; }
+    var cost = skCost(sk, lv);
+    if (state.coins < cost) { skMsg('Not enough coins: you need ' + fmtNum(cost - state.coins) + ' more.', false); return; }
+    state.coins -= cost;
+    if (!state.skills) state.skills = {};
+    state.skills[sk.id] = lv + 1;
+    save();
+    renderAll();
+    skMsg(sk.name + ' is now level ' + (lv + 1) + ': ' + sk.eff(lv + 1) + '.', true);
+  }
+  function renderSkills() {
+    $('sk-coins').textContent = fmtNum(state.coins);
+    var sum = [];
+    SKILLS.forEach(function (sk) { if (skLv(sk.id)) sum.push(sk.eff(skLv(sk.id))); });
+    $('sk-sum').textContent = sum.length ? sum.join(' · ') : 'No skills yet. Your first upgrade costs only ' + SKILLS[0].base + ' coins.';
+    var box = $('sk-tree'); clear(box);
+    var branches = [];
+    SKILLS.forEach(function (sk) { if (branches.indexOf(sk.branch) < 0) branches.push(sk.branch); });
+    branches.forEach(function (br) {
+      box.appendChild(el('h3', null, br));
+      var list = el('div', 'list');
+      SKILLS.forEach(function (sk) {
+        if (sk.branch !== br) return;
+        var lv = skLv(sk.id), locked = skLocked(sk), maxed = lv >= sk.max;
+        var c = el('div', 'card' + (locked ? ' locked' : ''));
+        c.style.setProperty('--c', locked ? '#6b7280' : '#fbbf24');
+        c.appendChild(el('div', 'ic', sk.icon));
+        var nm = el('div', 'nm', sk.name + ' · Lv ' + lv + '/' + sk.max);
+        nm.appendChild(el('span', 'sm', locked ? 'Locked: needs ' + skDef(sk.req.id).name + ' level ' + sk.req.lv : sk.desc + ' Now: ' + sk.eff(lv) + (maxed ? '' : ' → next: ' + sk.eff(lv + 1))));
+        c.appendChild(nm);
+        var cost = maxed ? 0 : skCost(sk, lv);
+        var b = el('button', 'btn sm', maxed ? 'MAX' : locked ? 'Locked' : fmtNum(cost) + ' ◎');
+        b.type = 'button';
+        b.disabled = maxed || locked;
+        b.style.opacity = (!maxed && !locked && state.coins < cost) ? '.55' : '1';
+        b.addEventListener('click', function () { buySkill(sk); });
+        c.appendChild(b);
+        list.appendChild(c);
+      });
+      box.appendChild(list);
+    });
+  }
+
+  /* ---------- shop ---------- */
+  var SHOP = [
+    { type: 'luck', mult: 2, mins: 5, cost: 10000, name: '2x Luck', desc: '5 minutes · every rarity above Common twice as likely' },
+    { type: 'luck', mult: 2, mins: 15, cost: 25000, name: '2x Luck (long)', desc: '15 minutes · every rarity above Common twice as likely' },
+    { type: 'luck', mult: 3, mins: 5, cost: 30000, name: '3x Luck', desc: '5 minutes · every rarity above Common three times as likely' },
+    { type: 'coins', mult: 2, mins: 10, cost: 5000, name: '2x Coins', desc: '10 minutes · double coins from every hunt' }
+  ];
+  function shopCost(it) { return Math.ceil(it.cost * (1 - 0.02 * skLv('disc'))); }
+  function shopMins(it) { return Math.round(it.mins * (1 + 0.1 * skLv('blen'))); }
+  function fmtNum(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function shopMsg(t, ok) { var m = $('shop-msg'); m.className = 'msg ' + (ok ? 'ok' : 'bad'); m.textContent = t; }
+  function buyItem(it) {
+    var cost = shopCost(it), mins = shopMins(it);
+    if (state.coins < cost) { shopMsg('Not enough coins: you need ' + fmtNum(cost - state.coins) + ' more.', false); return; }
+    askConfirm('Buy ' + it.name + '?', it.desc + '. Costs ' + fmtNum(cost) + ' coins, you have ' + fmtNum(state.coins) + '.', 'Buy', function () {
+      if (state.coins < cost) return;
+      var r = it.type === 'luck' ? applyLuck(it.mult, mins, true) : applyCoinBoost(mins);
+      if (!r.ok) { shopMsg(r.text, false); return; }
+      state.coins -= cost;
+      save();
+      renderAll();
+      tickBoost();
+      shopMsg('Bought ' + it.name + ' (' + mins + ' min).', true);
+    });
+  }
+  function renderShop() {
+    $('shop-coins').textContent = fmtNum(state.coins);
+    var box = $('shop-list'); clear(box);
+    SHOP.forEach(function (it) {
+      var c = el('div', 'card');
+      c.style.setProperty('--c', it.type === 'luck' ? '#fbbf24' : '#60a5fa');
+      c.appendChild(el('div', 'ic', it.type === 'luck' ? '✦' : '◎'));
+      var nm = el('div', 'nm', it.name);
+      nm.appendChild(el('span', 'sm', it.desc));
+      c.appendChild(nm);
+      var b = el('button', 'btn sm', fmtNum(shopCost(it)) + ' ◎');
+      b.type = 'button';
+      b.style.opacity = state.coins >= shopCost(it) ? '1' : '.55';
+      b.addEventListener('click', function () { buyItem(it); });
+      c.appendChild(b);
+      box.appendChild(c);
+    });
+  }
+
+  /* ---------- player (base) name ---------- */
+  function lockName() {
+    var msg = $('pname-msg'), v = $('pname-input').value.trim();
+    function say(t) { msg.className = 'msg bad'; msg.textContent = t; }
+    if (state.pname) { say('Your player name is already locked in.'); return; }
+    if (!NAME_RE.test(v)) { say('Use 3 to 16 letters, numbers or underscores (no spaces).'); return; }
+    msg.textContent = '';
+    askConfirm('Lock in "' + v + '"?', 'Your player name is permanent. It cannot be changed or rerolled, and it shows on the leaderboard and in lobbies. It stays even after a progress reset.', 'Lock it in', function () {
+      if (state.pname) return;
+      nameTaken(v).then(function (taken) {
+        if (state.pname) return;
+        if (taken) { say('That player name is already taken on the online leaderboard. Choose another.'); return; }
+        state.pname = v;
+        save();
+        $('pname-input').value = '';
+        renderAll();
+        toast('Player name set: ' + v);
+      });
+    });
+  }
+
+  /* ---------- confirm dialog ---------- */
+  var confirmFn = null;
+  function askConfirm(title, text, okLabel, fn) {
+    $('confirm-title').textContent = title;
+    $('confirm-text').textContent = text;
+    $('confirm-ok').textContent = okLabel;
+    confirmFn = fn;
+    $('confirm').hidden = false;
+    try { $('confirm-cancel').focus(); } catch (e) {}
+  }
+  function closeConfirm() { $('confirm').hidden = true; confirmFn = null; }
+
+  function copyText(text) {
+    function fb() {
+      try {
+        var t = document.createElement('textarea');
+        t.value = text; t.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(t); t.select();
+        var ok = document.execCommand && document.execCommand('copy');
+        document.body.removeChild(t);
+        toast(ok ? 'Copied to clipboard.' : 'Could not copy. Select the text and copy it manually.');
+      } catch (e) { toast('Could not copy. Select the text and copy it manually.'); }
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { toast('Copied to clipboard.'); }, fb);
+      else fb();
+    } catch (e) { fb(); }
+  }
+
+  /* ---------- leaderboard ---------- */
+  var CATS = [{ k: 'rare', t: 'Rarest roll' }, { k: 'rolls', t: 'Most rolls' }, { k: 'coins', t: 'Most coins' }, { k: 'uniq', t: 'Most usernames' }];
+  function entries() {
+    var me = { pid: state.pid, pname: state.pname, name: state.equipped, rolls: state.hunts, coins: state.coins, uniq: unique(), best: state.best ? state.best.n : null, me: true };
+    var list = [];
+    if (ui.rs === 'global') {
+      // live rows when connected and loaded, otherwise the local player database 
+      var src = (gl.url && gl.status === 'ok') ? gl.rows : Object.keys(reg).map(function (k) { return reg[k]; });
+      src.forEach(function (r) { if (r.pid !== state.pid) list.push(r); });
+      if (state.pname) list.push(me);
+      return list;
+    }
+    list.push(me);
+    if (state.lobby) state.lobby.members.forEach(function (m) { list.push(m); });
+    return list;
+  }
+  function metric(e, k) { return k === 'rare' ? (e.best ? INDEX[e.best] + 1 : 0) : e[k]; }
+  function valueText(e, k) {
+    if (k === 'rare') return e.best ? RARITIES[INDEX[e.best]].name + ' · ' + e.best : 'No rolls yet';
+    if (k === 'rolls') return e.rolls + ' rolls';
+    if (k === 'coins') return e.coins + ' coins';
+    return e.uniq + ' / ' + TOTAL + ' usernames';
+  }
+  function buildRankChips() {
+    var box = $('ranks-chips');
+    function mark() {
+      for (var i = 0; i < box.children.length; i++) {
+        var on = box.children[i].getAttribute('data-v') === ui.rc;
+        box.children[i].classList.toggle('on', on);
+        box.children[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+    }
+    CATS.forEach(function (c) {
+      var b = el('button', 'chip', c.t);
+      b.type = 'button';
+      b.setAttribute('data-v', c.k);
+      b.style.setProperty('--c', '#c084fc');
+      b.addEventListener('click', function () { ui.rc = c.k; mark(); renderRanks(); });
+      box.appendChild(b);
+    });
+    mark();
+  }
+  function renderRanks() {
+    var box = $('ranks-list'); clear(box);
+    var k = ui.rc, g = ui.rs === 'global', list = entries(), note;
+    $('src-global').classList.toggle('on', g);
+    $('src-lobby').classList.toggle('on', !g);
+    list.sort(function (a, b) { return metric(b, k) - metric(a, k) || b.coins - a.coins || ((a.pname || a.name) < (b.pname || b.name) ? -1 : 1); });
+    if (g) {
+      if (!state.pname) note = 'Set your player name on the Home screen to be listed.' + (gl.url ? '' : ' Showing the local player database.');
+      else if (!gl.url) note = 'Local player database · ' + list.length + ' players (everyone registered that this device has seen). Turn on the online leaderboard in Settings for players worldwide.';
+      else if (gl.status === 'loading') note = 'Loading the global leaderboard…';
+      else if (gl.status === 'error') note = glErrText();
+      else note = 'Global leaderboard · ' + gl.rows.length + ' players · your stats upload automatically.';
+    } else {
+      note = state.lobby
+        ? 'Lobby: ' + state.lobby.name + ' (' + state.lobby.code + '). Friends appear here once you add their score cards.'
+        : 'Only your own stats so far. Create or join a lobby to compare with friends.';
+    }
+    $('ranks-note').textContent = note;
+    if (!list.length) box.appendChild(emptyBox('No registered players yet', 'Set your player name on the Home screen to be the first on the board.'));
+    list.forEach(function (e, i) {
+      if (i >= 100 && !e.me) return;
+      var c = el('div', 'card' + (e.me ? ' me' : ''));
+      c.style.setProperty('--c', RARITIES[INDEX[e.name]].color);
+      c.appendChild(el('div', 'rank' + (i < 3 ? ' r' + (i + 1) : ''), String(i + 1)));
+      var nm = el('div', 'nm', e.pname || e.name);
+      var rk = e.pname ? rankOf(e.pid) : 'member';
+      if (rk !== 'member') { var bd = el('span', 'rk', RANK_INFO[rk].t); bd.style.color = RANK_INFO[rk].c; nm.appendChild(bd); }
+      nm.appendChild(el('span', 'sm', (e.pname ? e.name + ' · ' : '') + valueText(e, k) + (e.me ? ' · You' : '')));
+      c.appendChild(nm);
+      box.appendChild(c);
+    });
+  }
+
+  /* ---------- online leaderboard (Supabase over plain REST) ---------- */
+  // The publishable key is meant to be public; it can only do what the table policies allow. Never put a secret / service_role key here.
+  var SB_URL = 'https://mfrprudnjkyfihfmpmuk.supabase.co';
+  var SB_KEY = 'sb_publishable_eD8G3BCa3Ua3oEtGRm4Q2w_K-y5d5CL';
+  var ONLINE_KEY = 'usernameHunter.online.v1';
+  function loadGlobal() {
+    var on = true;
+    try { on = localStorage.getItem(ONLINE_KEY) !== '0'; } catch (e) {}
+    gl.url = on ? SB_URL : '';
+  }
+  function saveGlobal() { try { localStorage.setItem(ONLINE_KEY, gl.url ? '1' : '0'); } catch (e) {} }
+  function sbFetch(method, path, body, prefer) {
+    if (typeof fetch !== 'function') return Promise.reject(new Error('fetch unavailable'));
+    var opts = { method: method, headers: { apikey: SB_KEY } };
+    if (body !== undefined) { opts.body = JSON.stringify(body); opts.headers['Content-Type'] = 'application/json'; }
+    if (prefer) opts.headers.Prefer = prefer;
+    var p = fetch(SB_URL + path, opts).then(function (r) {
+      if (!r.ok) { var er = new Error('HTTP ' + r.status); er.status = r.status; throw er; }
+      return r.text().then(function (t) { return t ? JSON.parse(t) : null; });
+    });
+    var to = new Promise(function (_, rej) { setTimeout(function () { rej(new Error('timeout')); }, 8000); });
+    return Promise.race([p, to]);
+  }
+  function req(method, query, body, prefer) { return sbFetch(method, '/rest/v1/players' + query, body, prefer); }
+  function rpc(fn, body) { return sbFetch('POST', '/rest/v1/rpc/' + fn, body); }
+  function glErrText() {
+    if (gl.errCode === 404) return 'The online table is not set up yet. Run the setup SQL in Supabase (see Settings).';
+    if (gl.errCode === 401 || gl.errCode === 403) return 'The online database rejected the request. Check the policies from the setup SQL.';
+    if (gl.errCode === 409) return 'That player name is already taken on the online leaderboard.';
+    return 'Could not reach the online leaderboard. Check your connection, then press Refresh.';
+  }
+  function renderGlobalPanel() {
+    $('global-toggle').textContent = gl.url ? 'Turn off' : 'Turn on';
+    var m = $('global-msg');
+    if (!gl.url) { m.className = 'msg'; m.textContent = 'The online leaderboard is off. You only see players saved on this device.'; }
+    else if (gl.status === 'error') { m.className = 'msg bad'; m.textContent = glErrText(); }
+    else if (gl.status === 'ok') { m.className = 'msg ok'; m.textContent = 'Connected. ' + gl.rows.length + ' players online.' + (state.pname ? '' : ' Set your player name on the Home screen to be listed.'); }
+    else { m.className = 'msg'; m.textContent = 'Connecting…'; }
+  }
+  function cleanPlayer(pid, o) {
+    if (typeof pid !== 'string' || !ID_RE.test(pid) || !o || typeof o !== 'object' || Array.isArray(o)) return null;
+    if (typeof o.pname !== 'string' || !NAME_RE.test(o.pname)) return null;
+    if (typeof o.name !== 'string' || !has(INDEX, o.name)) return null;
+    if (!isInt(o.rolls) || !isInt(o.coins) || !isInt(o.uniq) || o.uniq < 1 || o.uniq > TOTAL) return null;
+    var best = (typeof o.best === 'string' && has(INDEX, o.best)) ? o.best : null;
+    return { pid: pid, pname: o.pname, name: o.name, rolls: o.rolls, coins: o.coins, uniq: o.uniq, best: best };
+  }
+  function publishNow() {
+    if (!gl.url || !state.pname) return Promise.resolve(false);
+    var body = { pid: state.pid, pname: state.pname, name: state.equipped, rolls: state.hunts, coins: state.coins, uniq: unique(), best: state.best ? state.best.n : null, updated_at: new Date().toISOString() };
+    return req('POST', '?on_conflict=pid', body, 'resolution=merge-duplicates,return=minimal').then(function () { return true; });
+  }
+  function nameTaken(v) {
+    if (!gl.url) return Promise.resolve(false);
+    return rpc('name_free', { p_pname: v, p_pid: state.pid }).then(function (free) { return free === false; }).catch(function () { return false; });
+  }
+  function fetchGlobal() {
+    if (!gl.url) return Promise.resolve();
+    gl.status = 'loading';
+    renderRanks();
+    renderGlobalPanel();
+    return req('GET', '?select=pid,pname,name,rolls,coins,uniq,best&order=coins.desc&limit=1000').then(function (data) {
+      var rows = [];
+      if (Array.isArray(data)) data.slice(0, 1000).forEach(function (o) { var c = o && cleanPlayer(o.pid, o); if (c) rows.push(c); });
+      gl.rows = rows; gl.status = 'ok'; gl.errCode = 0; gl.t = Date.now();
+      loadRanks();
+      rows.forEach(function (r) { regPut({ pid: r.pid, pname: r.pname, name: r.name, rolls: r.rolls, coins: r.coins, uniq: r.uniq, best: r.best }); });
+      saveReg();
+      renderRanks();
+      renderLocalDb();
+      renderGlobalPanel();
+    }).catch(function (e) {
+      gl.status = 'error'; gl.errCode = (e && e.status) || 0;
+      renderRanks();
+      renderGlobalPanel();
+    });
+  }
+  function schedulePublish() {
+    if (!gl.url || !state.pname) return;
+    clearTimeout(pubTimer);
+    pubTimer = setTimeout(function () {
+      publishNow().then(function () { return fetchGlobal(); }).catch(function (e) {
+        gl.status = 'error'; gl.errCode = (e && e.status) || 0;
+        if (gl.errCode === 409) toast('That player name is already taken on the online leaderboard.');
+        renderRanks();
+        renderGlobalPanel();
+      });
+    }, 1200);
+  }
+  function toggleGlobal() {
+    if (gl.url) {
+      clearTimeout(pubTimer);
+      gl = { url: '', rows: [], status: 'idle', t: 0, errCode: 0 };
+      saveGlobal();
+      toast('Online leaderboard turned off.');
+    } else {
+      gl.url = SB_URL;
+      saveGlobal();
+      toast('Online leaderboard turned on.');
+      schedulePublish();
+      fetchGlobal();
+    }
+    renderAll();
+  }
+
+  /* ---------- account: player name + password (no email) ---------- */
+  var LOGIN_KEY = 'usernameHunter.login.v2', OLD_LOGIN_KEY = 'usernameHunter.login.v1';
+  var PW_MIN = 6, PW_MAX = 40;
+  var legacy = null; // login from before players chose their own password: used once to prove ownership of the old account
+  var cloudTimer = null;
+  function pwOk(p) { return typeof p === 'string' && p.length >= PW_MIN && p.length <= PW_MAX; }
+  function randomCode(n) {
+    var a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', out = '', bytes = new Uint8Array(n), i;
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) crypto.getRandomValues(bytes);
+    else for (i = 0; i < n; i++) bytes[i] = Math.floor(Math.random() * 256);
+    for (i = 0; i < n; i++) out += a.charAt(bytes[i] & 31);
+    return out;
+  }
+  function loadLogin() {
+    try {
+      var o = JSON.parse(localStorage.getItem(LOGIN_KEY) || 'null');
+      if (o && typeof o.pname === 'string' && NAME_RE.test(o.pname) && pwOk(o.code)) { cloud.pname = o.pname; cloud.code = o.code; }
+    } catch (e) {}
+    try {
+      var l = JSON.parse(localStorage.getItem(OLD_LOGIN_KEY) || 'null');
+      if (l && typeof l.pname === 'string' && NAME_RE.test(l.pname) && typeof l.code === 'string' && /^[A-Z2-9]{20}$/.test(l.code)) legacy = { pname: l.pname, code: l.code };
+    } catch (e) {}
+  }
+  function setLogin(pname, pw) {
+    cloud.pname = pname; cloud.code = pw; cloud.status = 'idle'; cloud.err = ''; legacy = null;
+    try { localStorage.setItem(LOGIN_KEY, JSON.stringify({ pname: pname, code: pw })); localStorage.removeItem(OLD_LOGIN_KEY); } catch (e) {}
+  }
+  function clearLogin() {
+    cloud.pname = ''; cloud.code = ''; cloud.rank = ''; cloud.status = 'idle'; cloud.err = '';
+    try { localStorage.removeItem(LOGIN_KEY); } catch (e) {}
+  }
+  function cloudMsg(t, ok) { var m = $('cloud-msg'); m.className = 'msg ' + (ok ? 'ok' : 'bad'); m.textContent = t; }
+  function cloudNetErr(e) {
+    return e && e.status === 404 ? 'The online tables are not set up yet. Run the newest setup SQL in Supabase (see Settings).' : 'Could not reach the server. Check your connection and try again.';
+  }
+  function renderCloud() {
+    var on = !!cloud.pname, m = $('cloud-status');
+    $('cloud-open').hidden = on;
+    $('cloud-active').hidden = !on;
+    if (on) {
+      if (cloud.status === 'error') { m.className = 'msg bad'; m.textContent = 'Logged in as ' + cloud.pname + '. ' + cloud.err; }
+      else { m.className = 'msg ok'; m.textContent = 'Logged in as ' + cloud.pname + ' (' + RANK_INFO[rankOf(state.pid)].t + '). ' + (cloud.status === 'saving' ? 'Saving…' : cloud.t ? 'Last saved ' + fmtTime(cloud.t) + '.' : 'Your progress is saved automatically.'); }
+    } else {
+      m.className = 'msg';
+      m.textContent = 'You are not logged in. Your progress is only saved on this device.';
+    }
+  }
+  function remoteReset() {
+    if (cloud.resetting) return;
+    cloud.resetting = true;
+    state = freshState(state.pid, state.pname);
+    save();
+    renderAll();
+    toast('Your progress was reset by the owner.');
+    rpc('save_ack_reset', { p_pname: cloud.pname, p_code: cloud.code, p_data: serialize() }).then(function () { cloud.resetting = false; }).catch(function () { cloud.resetting = false; });
+  }
+  function cloudSync() {
+    if (!cloud.pname) return Promise.resolve();
+    if (!cloud.pulled) return cloudPull().then(cloudSync);
+    cloud.status = 'saving';
+    renderCloud();
+    return rpc('save_update', { p_pname: cloud.pname, p_code: cloud.code, p_data: serialize() }).then(function (r) {
+      if (r === 'ok') { cloud.status = 'ok'; cloud.t = Date.now(); cloud.err = ''; }
+      else if (r === 'reset') { cloud.status = 'ok'; remoteReset(); }
+      else { cloud.status = 'error'; cloud.err = r === 'bad_login' ? 'Your login is no longer valid. Log out and log in again.' : 'The save was rejected (' + r + ').'; }
+      renderCloud();
+    }).catch(function () {
+      cloud.status = 'error'; cloud.err = 'Could not reach the server. It will retry after your next hunt.';
+      renderCloud();
+    });
+  }
+  function scheduleCloud() {
+    if (!cloud.pname) return;
+    clearTimeout(cloudTimer);
+    cloudTimer = setTimeout(cloudSync, 3000);
+  }
+  // rank and owner resets are picked up every minute
+  // take the newest progress from the server (e.g. bought something on another device)
+  function cloudPull() {
+    if (!cloud.pname) return Promise.resolve();
+    return rpc('save_load', { p_pname: cloud.pname, p_code: cloud.code }).then(function (res) {
+      cloud.pulled = true;
+      if (!res || typeof res !== 'object' || !res.data || res.reset) return;
+      var r = sanitize(res.data);
+      if (r.problems.length) return;
+      var base = pullBase; pullBase = 0;
+      if (r.state.ts > (base || state.ts || 0)) {
+        r.state.pid = state.pid; r.state.pname = cloud.pname; r.state.lobby = state.lobby;
+        state = r.state;
+        try { localStorage.setItem(KEY, JSON.stringify(serialize())); } catch (e) {}
+        renderAll();
+        toast('Progress updated from your account.');
+      }
+    }).catch(function () { cloud.pulled = true; pullBase = 0; });
+  }
+  function cloudStatus() {
+    if (!cloud.pname) return Promise.resolve();
+    return rpc('save_status', { p_pname: cloud.pname, p_code: cloud.code }).then(function (r) {
+      if (!r || typeof r !== 'object') {
+        clearLogin(); renderAll(); showGate('login'); gateMsg('Your login is no longer valid. Please log in again.', false);
+        return;
+      }
+      if (has(RANK_INFO, r.rank) && cloud.rank !== r.rank) { cloud.rank = r.rank; renderStats(); renderCloud(); renderRanks(); }
+      if (r.reset) remoteReset();
+    }).catch(function () {});
+  }
+  function cloudLoginWith(n, pw, say, done, netFail) {
+    say('Logging in…', true);
+    return rpc('save_load', { p_pname: n, p_code: pw }).then(function (res) {
+      if (!res || typeof res !== 'object' || !res.data) { say('Wrong player name or password.', false); return; }
+      var r = sanitize(res.data);
+      if (r.problems.length) { say('The saved game could not be read.', false); return; }
+      var pn = (typeof res.pname === 'string' && NAME_RE.test(res.pname)) ? res.pname : n;
+      r.state.pname = pn;
+      state = res.reset ? freshState(r.state.pid, pn) : r.state;
+      setLogin(pn, pw);
+      cloud.rank = has(RANK_INFO, res.rank) ? res.rank : 'member';
+      cloud.status = 'ok'; cloud.t = Date.now(); cloud.pulled = true;
+      save();
+      renderAll();
+      if (res.reset) rpc('save_ack_reset', { p_pname: pn, p_code: pw, p_data: serialize() }).catch(function () {});
+      say('Logged in as ' + pn + '. Your progress was loaded.', true);
+      if (done) done();
+    }).catch(function (e) { if (netFail) netFail(e); else say(cloudNetErr(e), false); });
+  }
+  function cloudChangePw() {
+    var o = $('cloud-old').value, p1 = $('cloud-new').value, p2 = $('cloud-new2').value;
+    if (!cloud.pname) return;
+    if (!pwOk(p1)) { cloudMsg('The new password needs 6 to 40 characters.', false); return; }
+    if (p1 !== p2) { cloudMsg('The new passwords do not match.', false); return; }
+    rpc('save_claim', { p_pname: cloud.pname, p_pid: state.pid, p_new: p1, p_old: o, p_data: serialize() }).then(function (r) {
+      if (r === 'ok') { setLogin(cloud.pname, p1); cloud.status = 'ok'; cloud.t = Date.now(); $('cloud-old').value = ''; $('cloud-new').value = ''; $('cloud-new2').value = ''; renderCloud(); cloudMsg('Password changed.', true); }
+      else cloudMsg(r === 'bad_login' ? 'The current password is wrong.' : 'The password could not be changed (' + r + ').', false);
+    }).catch(function (e) { cloudMsg(cloudNetErr(e), false); });
+  }
+
+  /* ---------- start-up login popup ---------- */
+  var gate = { skipped: false };
+  function gateMsg(t, ok) { var m = $('gate-msg'); m.className = 'msg ' + (ok ? 'ok' : 'bad'); m.textContent = t; }
+  function showGate(mode) {
+    if (cloud.pname) return;
+    $('gate-new').hidden = mode !== 'new';
+    $('gate-existing').hidden = mode !== 'existing';
+    $('gate-login').hidden = mode !== 'login';
+    var T = {
+      'new': ['Welcome, hunter!', 'Choose your player name and your own password. You need both to log in on any device. A player name can only be registered once, so nobody else can use it.'],
+      existing: ['Set your new password', 'Hi ' + (state.pname || '') + '! Everybody has to set a new password now. Your progress stays. Choose a password with 6 to 40 characters and remember it.'],
+      login: ['Log in', 'Enter your player name and your password.' + (state.hunts > 0 ? ' This replaces the progress on this device.' : '')]
+    }[mode];
+    $('gate-title').textContent = T[0];
+    $('gate-text').textContent = T[1];
+    $('gate-msg').textContent = '';
+    $('gate-msg').className = 'msg';
+    $('gate-offline').hidden = true;
+    $('gate').hidden = false;
+    try { (mode === 'new' ? $('gate-name') : mode === 'login' ? $('gate-login-name') : $('gate-epw')).focus(); } catch (e) {}
+  }
+  function maybeGate() { if (!cloud.pname && !gate.skipped) showGate(state.pname ? 'existing' : 'new'); }
+  function closeGate() { $('gate').hidden = true; }
+  function gateFail(e) { gateMsg(cloudNetErr(e), false); $('gate-offline').hidden = false; }
+  function gatePwCheck(p1, p2) {
+    if (!pwOk(p1)) { gateMsg('The password needs 6 to 40 characters.', false); return false; }
+    if (p1 !== p2) { gateMsg('The passwords do not match.', false); return false; }
+    return true;
+  }
+  function gateRegister(name, pw, existing) {
+    var prev = state.pname, old = (existing && legacy && legacy.pname.toLowerCase() === name.toLowerCase()) ? legacy.code : null;
+    gateMsg('Saving…', true);
+    state.pname = name;
+    var p = existing
+      ? rpc('save_claim', { p_pname: name, p_pid: state.pid, p_new: pw, p_old: old, p_data: serialize() })
+      : rpc('save_register', { p_pname: name, p_pid: state.pid, p_code: pw, p_data: serialize() });
+    return p.then(function (r) {
+      if (r === 'ok') {
+        setLogin(name, pw);
+        cloud.status = 'ok'; cloud.t = Date.now(); cloud.rank = cloud.rank || 'member'; cloud.pulled = true;
+        save();
+        renderAll();
+        closeGate();
+        toast('Password saved. You are logged in as ' + name + '.');
+        cloudStatus();
+      } else {
+        state.pname = prev;
+        if (existing && (r === 'taken' || r === 'bad_login')) { showGate('login'); $('gate-login-name').value = name; gateMsg('This name already has an account. Log in with its password. If it was forgotten, ask the owner to reset the name.', false); }
+        else if (r === 'taken') gateMsg('This player name is already taken. Choose another.', false);
+        else gateMsg('The account could not be saved (' + r + ').', false);
+      }
+    }).catch(function (e) { state.pname = prev; gateFail(e); });
+  }
+  function gateCreate() {
+    var v = $('gate-name').value.trim(), p1 = $('gate-pw').value, p2 = $('gate-pw2').value;
+    if (!NAME_RE.test(v)) { gateMsg('Use 3 to 16 letters, numbers or underscores (no spaces).', false); return; }
+    if (!gatePwCheck(p1, p2)) return;
+    gateMsg('', true);
+    askConfirm('Use "' + v + '"?', 'Your player name is permanent. It cannot be changed, it shows on the leaderboard, and nobody else can register it.', 'Create account', function () { gateRegister(v, p1, false); });
+  }
+  function gateSecure() {
+    var p1 = $('gate-epw').value, p2 = $('gate-epw2').value;
+    if (!state.pname || !gatePwCheck(p1, p2)) return;
+    gateRegister(state.pname, p1, true);
+  }
+  function gateLogin() {
+    var n = $('gate-login-name').value.trim(), c = $('gate-login-code').value;
+    if (!NAME_RE.test(n) || !pwOk(c)) { gateMsg('Enter your player name and your password.', false); return; }
+    cloudLoginWith(n, c, gateMsg, function () { $('gate-login-code').value = ''; closeGate(); toast('Welcome back, ' + state.pname + '!'); }, gateFail);
+  }
+
+  /* ---------- local player database (the "little fake database") ---------- */
+  var REG_KEY = 'usernameHunter.registry.v1';
+  function loadReg() {
+    try {
+      var o = JSON.parse(localStorage.getItem(REG_KEY) || 'null');
+      if (o && typeof o === 'object' && !Array.isArray(o)) {
+        Object.keys(o).slice(0, 500).forEach(function (k) {
+          var c = cleanPlayer(k, o[k]);
+          if (c) { c.t = (typeof o[k].t === 'number' && isFinite(o[k].t)) ? o[k].t : 0; reg[k] = c; }
+        });
+      }
+    } catch (e) {}
+  }
+  function saveReg() { try { localStorage.setItem(REG_KEY, JSON.stringify(reg)); } catch (e) {} }
+  function regPut(c) {
+    c.t = Date.now();
+    reg[c.pid] = c;
+    var ks = Object.keys(reg);
+    if (ks.length > 500) { ks.sort(function (a, b) { return reg[a].t - reg[b].t; }); delete reg[ks[0]]; }
+  }
+  function regSelf() {
+    if (!state.pname) return;
+    regPut({ pid: state.pid, pname: state.pname, name: state.equipped, rolls: state.hunts, coins: state.coins, uniq: unique(), best: state.best ? state.best.n : null });
+    saveReg();
+  }
+  function renderLocalDb() {
+    var n = Object.keys(reg).length;
+    $('localdb-info').textContent = n + ' registered player' + (n === 1 ? '' : 's') + ' stored on this device';
+  }
+
+  /* ---------- lobby ---------- */
+  function newLobbyCode() {
+    var a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = 'LB-';
+    for (var i = 0; i < 6; i++) s += a.charAt(Math.floor(Math.random() * a.length));
+    return s;
+  }
+  function lobbyMsg(t, ok) { var m = $('lobby-msg'); m.className = 'msg ' + (ok ? 'ok' : 'bad'); m.textContent = t; }
+  function createLobby() {
+    if (state.lobby) return;
+    var name = $('lobby-name').value.trim().slice(0, 24) || 'My Lobby';
+    state.lobby = { code: newLobbyCode(), name: name, members: [] };
+    save();
+    $('lobby-name').value = '';
+    lobbyMsg('', true);
+    renderAll();
+    toast('Lobby created. Share the code with friends.');
+  }
+  function joinLobby() {
+    if (state.lobby) return;
+    var code = $('lobby-code').value.trim().toUpperCase();
+    if (!LOBBY_RE.test(code)) { lobbyMsg('Enter a lobby code like LB-ABC123.', false); return; }
+    state.lobby = { code: code, name: 'Lobby ' + code, members: [] };
+    save();
+    $('lobby-code').value = '';
+    lobbyMsg('', true);
+    renderAll();
+    toast('Joined lobby ' + code + '.');
+  }
+  function leaveLobby() { state.lobby = null; save(); renderAll(); toast('You left the lobby.'); }
+  function removeMember(pid) {
+    if (!state.lobby) return;
+    state.lobby.members = state.lobby.members.filter(function (m) { return m.pid !== pid; });
+    save();
+    renderAll();
+  }
+  function myCard() {
+    return { pid: state.pid, pname: state.pname, name: state.equipped, rolls: state.hunts, coins: state.coins, uniq: unique(), best: state.best ? state.best.n : null, lobby: state.lobby.code, t: Date.now() };
+  }
+  function cardExport() {
+    if (!state.lobby) return;
+    var box = $('card-box');
+    box.value = 'UHCARD:' + JSON.stringify(myCard());
+    try { box.focus(); box.select(); } catch (e) {}
+    toast('Score card ready. Send it to your lobby.');
+  }
+  function cardAdd() {
+    var msg = $('card-msg'), raw = $('card-import').value.trim(), data, c;
+    function say(t, ok) { msg.className = 'msg ' + (ok ? 'ok' : 'bad'); msg.textContent = t; }
+    if (!state.lobby) { say('Join a lobby first.', false); return; }
+    if (!raw) { say('Paste a score card first.', false); return; }
+    if (raw.indexOf('UHCARD:') === 0) raw = raw.slice(7);
+    try { data = JSON.parse(raw); } catch (e) { say('That is not a valid score card.', false); return; }
+    c = cleanCard(data);
+    if (!c) { say('That score card is invalid.', false); return; }
+    if (c.lobby !== state.lobby.code) { say('That card belongs to a different lobby (' + c.lobby + ').', false); return; }
+    if (c.pid === state.pid) { say('That is your own card.', false); return; }
+    var ms = state.lobby.members, idx = -1, i;
+    for (i = 0; i < ms.length; i++) if (ms[i].pid === c.pid) idx = i;
+    if (idx > -1) ms[idx] = c;
+    else if (ms.length >= MAX_MEMBERS) { say('This lobby is full (' + MAX_MEMBERS + ' members).', false); return; }
+    else ms.push(c);
+    if (c.pname) { regPut({ pid: c.pid, pname: c.pname, name: c.name, rolls: c.rolls, coins: c.coins, uniq: c.uniq, best: c.best }); saveReg(); }
+    save();
+    renderAll();
+    $('card-import').value = '';
+    say(c.name + ' is now in your lobby.', true);
+  }
+  function renderLobby() {
+    var inLobby = !!state.lobby;
+    $('lobby-none').hidden = inLobby;
+    $('lobby-current').hidden = !inLobby;
+    if (!inLobby) return;
+    $('lobby-title').textContent = state.lobby.name;
+    $('lobby-code-show').textContent = state.lobby.code;
+    var ml = $('lobby-members'); clear(ml);
+    if (!state.lobby.members.length) ml.appendChild(emptyBox('No members yet', 'Add a friend’s score card to see them here and on the leaderboard.'));
+    state.lobby.members.forEach(function (m) {
+      var right = el('div'); right.style.textAlign = 'right';
+      right.appendChild(pill(INDEX[m.name]));
+      var rb = el('button', 'btn sm', 'Remove');
+      rb.type = 'button';
+      rb.addEventListener('click', function () { removeMember(m.pid); });
+      right.appendChild(rb);
+      ml.appendChild(rarityCard(m.pname || m.name, INDEX[m.name], right, (m.pname ? m.name + ' · ' : '') + m.rolls + ' rolls · ' + m.coins + ' coins · ' + m.uniq + '/' + TOTAL));
+    });
+  }
+
+  /* ---------- navigation ---------- */
+  var SCREENS = ['home', 'hunt', 'collection', 'index', 'ranks', 'lobby', 'shop', 'skills', 'settings'];
+  function show(name) {
+    if (SCREENS.indexOf(name) < 0) name = 'home';
+    SCREENS.forEach(function (s) { $('screen-' + s).classList.toggle('active', s === name); });
+    var btns = document.querySelectorAll('.nav button');
+    for (var i = 0; i < btns.length; i++) {
+      var on = btns[i].getAttribute('data-nav') === name;
+      btns[i].classList.toggle('on', on);
+      if (on) btns[i].setAttribute('aria-current', 'page'); else btns[i].removeAttribute('aria-current');
+    }
+    try { window.scrollTo(0, 0); } catch (e) {}
+    if (name === 'collection') renderCollection();
+    if (name === 'index') renderIndex();
+    if (name === 'ranks') { renderRanks(); if (ui.rs === 'global' && gl.url && Date.now() - gl.t > 15000) fetchGlobal(); }
+    if (name === 'lobby') renderLobby();
+    if (name === 'shop') renderShop();
+    if (name === 'skills') renderSkills();
+    if (name === 'settings') renderSettings();
+  }
+
+  function toast(msg) {
+    var t = $('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.hidden = true; }, 2600);
+  }
+
+  function buildChips(boxId, key, withLocked, rerender) {
+    var box = $(boxId);
+    var opts = [{ v: 'all', t: 'All' }];
+    RARITIES.forEach(function (R, i) { opts.push({ v: String(i), t: R.name, c: R.color }); });
+    if (withLocked) opts.push({ v: 'locked', t: 'Locked' });
+    function mark() {
+      for (var i = 0; i < box.children.length; i++) {
+        var on = box.children[i].getAttribute('data-v') === ui[key];
+        box.children[i].classList.toggle('on', on);
+        box.children[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+    }
+    opts.forEach(function (o) {
+      var b = el('button', 'chip', o.t);
+      b.type = 'button';
+      b.setAttribute('data-v', o.v);
+      if (o.c) b.style.setProperty('--c', o.c);
+      b.addEventListener('click', function () { ui[key] = o.v; mark(); rerender(); });
+      box.appendChild(b);
+    });
+    mark();
+  }
+
+  /* ---------- export / import / reset ---------- */
+  function doExport() {
+    var box = $('export-box');
+    box.value = JSON.stringify(serialize());
+    try { box.focus(); box.select(); } catch (e) {}
+    toast('Save code ready below. Copy it to keep a backup.');
+  }
+  function doCopy() {
+    var box = $('export-box');
+    if (!box.value) doExport();
+    copyText(box.value);
+  }
+  function doImport() {
+    var msg = $('import-msg'), raw = $('import-box').value.trim(), data, res;
+    function bad(t) { msg.className = 'msg bad'; msg.textContent = t; }
+    if (!raw) { bad('Paste a save code first.'); return; }
+    try { data = JSON.parse(raw); } catch (e) { bad('That is not valid save data (could not read it).'); return; }
+    res = sanitize(data);
+    if (res.problems.length) { bad('Import rejected: ' + res.problems[0]); return; }
+    if (!res.state.pname && state.pname) res.state.pname = state.pname;
+    if (!(data && typeof data.pid === 'string' && ID_RE.test(data.pid))) res.state.pid = state.pid;
+    state = res.state;
+    save();
+    renderAll();
+    $('import-box').value = '';
+    msg.className = 'msg ok';
+    msg.textContent = 'Save imported. You have ' + unique() + ' / ' + TOTAL + ' usernames.';
+  }
+  function doReset() {
+    state = freshState(state.pid, state.pname);
+    save();
+    $('export-box').value = '';
+    $('card-box').value = '';
+    closeConfirm();
+    renderAll();
+    toast('Progress reset. You still have ' + STARTER + '.');
+  }
+
+  /* ---------- init ---------- */
+  function init() {
+    var bg = $('bg'), i;
+    for (i = 0; i < 18; i++) {
+      var d = el('i'), s = 2 + Math.random() * 4;
+      d.style.left = (Math.random() * 100) + '%';
+      d.style.width = d.style.height = s + 'px';
+      d.style.setProperty('--t', (9 + Math.random() * 10).toFixed(1) + 's');
+      d.style.setProperty('--d', (-Math.random() * 14).toFixed(1) + 's');
+      d.style.setProperty('--x', Math.round((Math.random() - 0.5) * 120) + 'px');
+      if (i % 3 === 1) { d.style.background = '#60a5fa'; d.style.boxShadow = '0 0 10px #60a5fa'; }
+      if (i % 3 === 2) { d.style.background = '#ec4899'; d.style.boxShadow = '0 0 10px #ec4899'; }
+      bg.appendChild(d);
+    }
+    loadReg();
+    loadLogin();
+    state = load();
+    pullBase = state.ts || 0;
+    save();
+    loadGlobal();
+    ui.rs = 'global';
+    loadBoost();
+    var lr = loadAdmin(); admin = lr === '1' || lr === '2'; owner = lr === '2';
+    setRoleOptions();
+    wasLuck = boostLeft() > 0;
+    wasCoin = coinLeft() > 0;
+
+    var h = document.querySelectorAll('[data-hunt]');
+    for (i = 0; i < h.length; i++) h[i].addEventListener('click', hunt);
+    var n = document.querySelectorAll('[data-nav]');
+    for (i = 0; i < n.length; i++) (function (b) { b.addEventListener('click', function () { show(b.getAttribute('data-nav')); }); })(n[i]);
+
+    buildChips('collection-chips', 'cf', false, renderCollection);
+    buildChips('index-chips', 'xf', true, renderIndex);
+    $('collection-search').addEventListener('input', function (e) { ui.cq = e.target.value; renderCollection(); });
+    $('index-search').addEventListener('input', function (e) { ui.iq = e.target.value; renderIndex(); });
+
+    $('rv-continue').addEventListener('click', closeReveal);
+    $('export-btn').addEventListener('click', doExport);
+    $('copy-btn').addEventListener('click', doCopy);
+    $('import-btn').addEventListener('click', doImport);
+    $('reset-btn').addEventListener('click', function () {
+      askConfirm('Reset all progress?', 'This deletes your collection, coins, hunt and duplicate counts, history, redeemed codes and lobby. You will keep the starter username.' + (cloud.pname ? ' Your online cloud save will be reset too.' : '') + ' This cannot be undone.', 'Yes, reset', doReset);
+    });
+    $('confirm-cancel').addEventListener('click', closeConfirm);
+    $('confirm-ok').addEventListener('click', function () { var f = confirmFn; closeConfirm(); if (f) f(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (!$('confirm').hidden) closeConfirm();
+      else if (!$('reveal').hidden) closeReveal();
+    });
+    $('localdb-clear').addEventListener('click', function () {
+      askConfirm('Clear local player database?', 'This removes the saved players from this device. You stay registered.', 'Clear', function () { reg = {}; regSelf(); saveReg(); renderAll(); toast('Local player database cleared.'); });
+    });
+    $('pname-login').addEventListener('click', function () { showGate('login'); });
+    $('global-toggle').addEventListener('click', toggleGlobal);
+    $('global-retry').addEventListener('click', function () { if (gl.url) { schedulePublish(); fetchGlobal(); } else toast('The online leaderboard is off.'); });
+    $('src-global').addEventListener('click', function () { ui.rs = 'global'; renderRanks(); if (gl.url && Date.now() - gl.t > 15000) fetchGlobal(); });
+    $('src-lobby').addEventListener('click', function () { ui.rs = 'lobby'; renderRanks(); });
+    $('ranks-refresh').addEventListener('click', function () { if (ui.rs === 'global' && gl.url) fetchGlobal(); else if (ui.rs === 'global') toast('Not connected to a global leaderboard.'); else renderRanks(); });
+    $('pname-btn').addEventListener('click', lockName);
+    $('admin-tab-local').addEventListener('click', function () { adminSide = 'local'; renderAdmin(); });
+    $('admin-tab-global').addEventListener('click', function () { adminSide = 'global'; renderAdmin(); });
+    $('admin-tab-players').addEventListener('click', function () { adminSide = 'players'; renderAdmin(); if (owner) { renderOwnerRanks(); fillPlayerPick(); } });
+    $('admin-start').addEventListener('click', function () {
+      if (!admin) return;
+      var m = adminNum('admin-mult', 2, 1, capOf('local')), mi = durMin('admin-mins', 'admin-unit', 10);
+      applyLuck(m, mi, false, true);
+      toast(m + 'x luck started for ' + fmtMins(mi) + '.');
+    });
+    $('admin-stop').addEventListener('click', function () { if (admin) stopBoost(); });
+    $('admin-cstart').addEventListener('click', function () {
+      if (!admin) return;
+      var m = adminNum('admin-cmult', 2, 1, capOf('local')), mi = durMin('admin-cmins', 'admin-cunit', 10);
+      applyCoinBoost(mi, m, true);
+      toast(m + 'x coins started for ' + fmtMins(mi) + '.');
+    });
+    $('admin-cstop').addEventListener('click', function () { if (admin) stopCoinBoost(); });
+    $('admin-gstart').addEventListener('click', function () {
+      if (!admin) return;
+      var m = adminNum('admin-gmult', 2, 1, capOf('local')), mi = durMin('admin-gmins', 'admin-gunit', 10);
+      applyLuck(m, mi, false, true); applyCoinBoost(mi, m, true);
+      toast('Mega boost: ' + m + 'x luck and coins for ' + fmtMins(mi) + '.');
+    });
+    $('admin-guar-start').addEventListener('click', function () {
+      if (!admin) return;
+      var n = adminNum('admin-guar-n', 10, 1, owner ? 1000 : 50), r = adminNum('admin-guar-r', 3, 1, owner ? 7 : 4);
+      startGuar(n, r);
+      toast('Your next ' + n + ' hunts are at least ' + RARITIES[r].name + '.');
+    });
+    $('admin-guar-stop').addEventListener('click', function () { if (admin) { startGuar(0, boost.guarR); toast('Guaranteed rarity stopped.'); } });
+    $('admin-stopall').addEventListener('click', function () { if (!admin) return; boost.guarN = 0; saveBoost(); stopBoost(); stopCoinBoost(); toast('All your boosts stopped.'); });
+    $('admin-addcoins').addEventListener('click', function () {
+      if (!admin) return;
+      var n = adminNum('admin-coins', 10000, 1, 1000000000), room = 1000000000 - state.coins;
+      n = Math.min(n, room);
+      if (n <= 0) { toast('You are at the coin limit.'); return; }
+      state.coins += n; save(); renderAll(); toast('Added ' + fmtNum(n) + ' coins.');
+    });
+    $('admin-give-btn').addEventListener('click', function () {
+      if (!admin) return;
+      var n = $('admin-give').value;
+      if (!has(INDEX, n)) { toast('Choose a username first.'); return; }
+      if (state.counts[n] > 0) { toast('You already own ' + n + '.'); return; }
+      state.counts[n] = 1; save(); renderAll(); toast('You got ' + n + '.');
+    });
+    $('admin-make').addEventListener('click', createCode);
+    $('admin-copy').addEventListener('click', function () { if (admin && $('admin-token').value) copyText($('admin-token').value); });
+    $('admin-codes-refresh').addEventListener('click', refreshCodes);
+    $('ev-start').addEventListener('click', function () {
+      if (!admin) return;
+      var t = $('ev-type').value, s = adminNum('ev-mult', 2, 1, capOf('ev')), mi = durMin('ev-mins', 'ev-unit', 30);
+      eventSet(t === 'coins' ? 1 : s, t === 'luck' || t === '' ? 1 : s, mi);
+    });
+    $('ev-stop').addEventListener('click', function () { if (admin) eventSet(1, 1, 0); });
+    $('ow-pick').addEventListener('change', function () { if ($('ow-pick').value) $('ow-name').value = $('ow-pick').value; });
+    $('ow-rank-btn').addEventListener('click', ownerRank);
+    $('ow-reset').addEventListener('click', function () { ownerReset('progress'); });
+    $('ow-delete').addEventListener('click', function () { ownerReset('delete'); });
+    $('admin-hide').addEventListener('click', function () { adminPass = ''; $('admin-pass').value = ''; setAdmin(false); renderAll(); toast('Panel hidden. Enter the code again to reopen it.'); });
+    $('gate-create').addEventListener('click', gateCreate);
+    $('gate-pw2').addEventListener('keydown', function (e) { if (e.key === 'Enter') gateCreate(); });
+    $('gate-to-login').addEventListener('click', function () { showGate('login'); });
+    $('gate-existing-login').addEventListener('click', function () { showGate('login'); });
+    $('gate-back').addEventListener('click', function () { showGate(state.pname ? 'existing' : 'new'); });
+    $('gate-secure').addEventListener('click', gateSecure);
+    $('gate-epw2').addEventListener('keydown', function (e) { if (e.key === 'Enter') gateSecure(); });
+    $('gate-login-btn').addEventListener('click', gateLogin);
+    $('gate-login-code').addEventListener('keydown', function (e) { if (e.key === 'Enter') gateLogin(); });
+    $('gate-offline').addEventListener('click', function () { gate.skipped = true; closeGate(); toast('Playing offline. Your progress is saved on this device only.'); });
+    $('cloud-open-btn').addEventListener('click', function () { showGate(state.pname ? 'existing' : 'new'); });
+    $('cloud-sync-btn').addEventListener('click', function () { cloudSync().then(function () { toast(cloud.status === 'ok' ? 'Saved online.' : 'Could not save online.'); }); });
+    $('cloud-change').addEventListener('click', cloudChangePw);
+    $('cloud-logout-btn').addEventListener('click', function () {
+      askConfirm('Log out?', 'Your account stays online. To log in again you need your player name and your password.', 'Log out', function () {
+        clearTimeout(cloudTimer); clearLogin(); renderAll(); showGate('login');
+      });
+    });
+    $('pname-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') lockName(); });
+    $('code-btn').addEventListener('click', redeem);
+    $('code-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') redeem(); });
+    $('lobby-create').addEventListener('click', createLobby);
+    $('lobby-join').addEventListener('click', joinLobby);
+    $('lobby-leave').addEventListener('click', function () {
+      askConfirm('Leave lobby?', 'You will lose this lobby and its member list. Your own progress is not affected.', 'Leave', leaveLobby);
+    });
+    $('lobby-copy-code').addEventListener('click', function () { if (state.lobby) copyText(state.lobby.code); });
+    $('card-export').addEventListener('click', cardExport);
+    $('card-copy').addEventListener('click', function () { if (!state.lobby) return; if (!$('card-box').value) cardExport(); copyText($('card-box').value); });
+    $('card-add').addEventListener('click', cardAdd);
+    buildRankChips();
+    buildGiveList();
+    setRoleOptions();
+
+    renderAll();
+    show('home');
+    maybeGate();
+    tickBoost();
+    setInterval(tickBoost, 1000);
+    setInterval(function () {
+      if (ui.rs === 'global' && gl.url && $('screen-ranks').classList.contains('active') && gl.status !== 'loading' && Date.now() - gl.t > 30000) fetchGlobal();
+    }, 5000);
+    if (gl.url) { schedulePublish(); if (ui.rs === 'global') fetchGlobal(); }
+    fetchEvent();
+    setInterval(fetchEvent, 60000);
+    cloudPull();
+    cloudStatus();
+    setInterval(cloudStatus, 60000);
+    setInterval(function () { if (!document.hidden && cloud.pulled && cloud.status !== 'saving') cloudPull(); }, 30000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden && cloud.pulled) cloudPull(); });
+  }
+
+  window.UH = { state: function () { return state; }, rollRarity: rollRarity, pickName: pickName, apply: applyHunt, sanitize: sanitize, DB: DB, RARITIES: RARITIES, NAMES: NAMES, KEY: KEY, CODES: CODES, COINS: COINS, luck: luck, weights: weights, global: function () { return gl; }, registry: function () { return reg; }, cloud: function () { return cloud; }, event: function () { return ev; }, boost: function () { return boost; }, rankOf: rankOf, owner: function () { return owner; }, setCooldown: function (ms) { COOLDOWN_MS = ms; cdUntil = 0; } };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>
